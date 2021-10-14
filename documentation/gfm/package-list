@@ -1,0 +1,67 @@
+$dokka.format:gfm-v1
+$dokka.linkExtension:md
+$dokka.location:tech.skot.libraries.map.di////PointingToDeclaration/viewmodel/viewmodel/tech.skot.libraries.map.di/index.md
+$dokka.location:tech.skot.libraries.map.di//skmapModule/#/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map.di/skmap-module.md
+$dokka.location:tech.skot.libraries.map.di//skmapViewInjector/#/PointingToDeclaration/viewmodel/viewmodel/tech.skot.libraries.map.di/skmap-view-injector.md
+$dokka.location:tech.skot.libraries.map.di/SKMapViewInjector///PointingToDeclaration/viewmodel/viewmodel/tech.skot.libraries.map.di/-s-k-map-view-injector/index.md
+$dokka.location:tech.skot.libraries.map.di/SKMapViewInjector/sKMap/#kotlin.Function1[tech.skot.libraries.map.SKMapVC.Marker,kotlin.Unit]#kotlin.collections.List[tech.skot.libraries.map.SKMapVC.Marker]#kotlin.Function1[kotlin.Pair[kotlin.Double,kotlin.Double],kotlin.Unit]?#tech.skot.libraries.map.SKMapVC.Marker?/PointingToDeclaration/viewmodel/viewmodel/tech.skot.libraries.map.di/-s-k-map-view-injector/s-k-map.md
+$dokka.location:tech.skot.libraries.map.di/SKMapViewInjectorImpl///PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map.di/-s-k-map-view-injector-impl/index.md
+$dokka.location:tech.skot.libraries.map.di/SKMapViewInjectorImpl/SKMapViewInjectorImpl/#/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map.di/-s-k-map-view-injector-impl/-s-k-map-view-injector-impl.md
+$dokka.location:tech.skot.libraries.map.di/SKMapViewInjectorImpl/sKMap/#kotlin.Function1[tech.skot.libraries.map.SKMapVC.Marker,kotlin.Unit]#kotlin.collections.List[tech.skot.libraries.map.SKMapVC.Marker]#kotlin.Function1[kotlin.Pair[kotlin.Double,kotlin.Double],kotlin.Unit]?#tech.skot.libraries.map.SKMapVC.Marker?/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map.di/-s-k-map-view-injector-impl/s-k-map.md
+$dokka.location:tech.skot.libraries.map////PointingToDeclaration/viewmodel/viewmodel/tech.skot.libraries.map/index.md
+$dokka.location:tech.skot.libraries.map/SKMap///PointingToDeclaration/viewmodel/viewmodel/tech.skot.libraries.map/-s-k-map/index.md
+$dokka.location:tech.skot.libraries.map/SKMap/SKMap/#kotlin.collections.List[tech.skot.libraries.map.SKMapVC.Marker]#kotlin.Boolean#kotlin.Boolean#kotlin.Function1[kotlin.Pair[kotlin.Double,kotlin.Double],kotlin.Unit]?/PointingToDeclaration/viewmodel/viewmodel/tech.skot.libraries.map/-s-k-map/-s-k-map.md
+$dokka.location:tech.skot.libraries.map/SKMap/items/#/PointingToDeclaration/viewmodel/viewmodel/tech.skot.libraries.map/-s-k-map/items.md
+$dokka.location:tech.skot.libraries.map/SKMap/selectMarkerWhenClicked/#/PointingToDeclaration/viewmodel/viewmodel/tech.skot.libraries.map/-s-k-map/select-marker-when-clicked.md
+$dokka.location:tech.skot.libraries.map/SKMap/selectedMarker/#/PointingToDeclaration/viewmodel/viewmodel/tech.skot.libraries.map/-s-k-map/selected-marker.md
+$dokka.location:tech.skot.libraries.map/SKMap/setCameraPosition/#kotlin.Pair[kotlin.Double,kotlin.Double]#kotlin.Float#kotlin.Boolean/PointingToDeclaration/viewmodel/viewmodel/tech.skot.libraries.map/-s-k-map/set-camera-position.md
+$dokka.location:tech.skot.libraries.map/SKMap/setOnMapClicked/#kotlin.Function1[kotlin.Pair[kotlin.Double,kotlin.Double],kotlin.Unit]?/PointingToDeclaration/viewmodel/viewmodel/tech.skot.libraries.map/-s-k-map/set-on-map-clicked.md
+$dokka.location:tech.skot.libraries.map/SKMap/unselectMarkerWhenMapClicked/#/PointingToDeclaration/viewmodel/viewmodel/tech.skot.libraries.map/-s-k-map/unselect-marker-when-map-clicked.md
+$dokka.location:tech.skot.libraries.map/SKMap/view/#/PointingToDeclaration/viewmodel/viewmodel/tech.skot.libraries.map/-s-k-map/view.md
+$dokka.location:tech.skot.libraries.map/SKMapRAI///PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-r-a-i/index.md
+$dokka.location:tech.skot.libraries.map/SKMapRAI/onItems/#kotlin.collections.List[tech.skot.libraries.map.SKMapVC.Marker]/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-r-a-i/on-items.md
+$dokka.location:tech.skot.libraries.map/SKMapRAI/onSelectedMarker/#tech.skot.libraries.map.SKMapVC.Marker?/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-r-a-i/on-selected-marker.md
+$dokka.location:tech.skot.libraries.map/SKMapRAI/setCameraPosition/#kotlin.Pair[kotlin.Double,kotlin.Double]#kotlin.Float#kotlin.Boolean/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-r-a-i/set-camera-position.md
+$dokka.location:tech.skot.libraries.map/SKMapVC.Marker///PointingToDeclaration/viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/-marker/index.md
+$dokka.location:tech.skot.libraries.map/SKMapVC.Marker/Marker/#kotlin.String#kotlin.String?#tech.skot.core.view.Icon?#tech.skot.core.view.Icon?#kotlin.Pair[kotlin.Double,kotlin.Double]#kotlin.Function0[kotlin.Unit]/PointingToDeclaration/viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/-marker/-marker.md
+$dokka.location:tech.skot.libraries.map/SKMapVC.Marker/normalIcon/#/PointingToDeclaration/viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/-marker/normal-icon.md
+$dokka.location:tech.skot.libraries.map/SKMapVC.Marker/onMarkerClick/#/PointingToDeclaration/viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/-marker/on-marker-click.md
+$dokka.location:tech.skot.libraries.map/SKMapVC.Marker/position/#/PointingToDeclaration/viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/-marker/position.md
+$dokka.location:tech.skot.libraries.map/SKMapVC.Marker/selectedIcon/#/PointingToDeclaration/viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/-marker/selected-icon.md
+$dokka.location:tech.skot.libraries.map/SKMapVC.Marker/snippet/#/PointingToDeclaration/viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/-marker/snippet.md
+$dokka.location:tech.skot.libraries.map/SKMapVC.Marker/title/#/PointingToDeclaration/viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/-marker/title.md
+$dokka.location:tech.skot.libraries.map/SKMapVC///PointingToDeclaration/viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/index.md
+$dokka.location:tech.skot.libraries.map/SKMapVC/markers/#/PointingToDeclaration/viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/markers.md
+$dokka.location:tech.skot.libraries.map/SKMapVC/onMapClicked/#/PointingToDeclaration/viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/on-map-clicked.md
+$dokka.location:tech.skot.libraries.map/SKMapVC/onMarkerClick/#/PointingToDeclaration/viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/on-marker-click.md
+$dokka.location:tech.skot.libraries.map/SKMapVC/selectedMarker/#/PointingToDeclaration/viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/selected-marker.md
+$dokka.location:tech.skot.libraries.map/SKMapVC/setCameraPosition/#kotlin.Pair[kotlin.Double,kotlin.Double]#kotlin.Float#kotlin.Boolean/PointingToDeclaration/viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/set-camera-position.md
+$dokka.location:tech.skot.libraries.map/SKMapView///PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-view/index.md
+$dokka.location:tech.skot.libraries.map/SKMapView/SKMapView/#tech.skot.libraries.map.SKMapViewProxy#tech.skot.core.components.SKActivity#androidx.fragment.app.Fragment?#com.google.android.gms.maps.MapView/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-view/-s-k-map-view.md
+$dokka.location:tech.skot.libraries.map/SKMapView/mapView/#/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-view/map-view.md
+$dokka.location:tech.skot.libraries.map/SKMapView/onItems/#kotlin.collections.List[tech.skot.libraries.map.SKMapVC.Marker]/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-view/on-items.md
+$dokka.location:tech.skot.libraries.map/SKMapView/onSelectedMarker/#tech.skot.libraries.map.SKMapVC.Marker?/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-view/on-selected-marker.md
+$dokka.location:tech.skot.libraries.map/SKMapView/proxy/#/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-view/proxy.md
+$dokka.location:tech.skot.libraries.map/SKMapView/setCameraPosition/#kotlin.Pair[kotlin.Double,kotlin.Double]#kotlin.Float#kotlin.Boolean/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-view/set-camera-position.md
+$dokka.location:tech.skot.libraries.map/SKMapViewProxy.SetCameraPositionData///PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-view-proxy/-set-camera-position-data/index.md
+$dokka.location:tech.skot.libraries.map/SKMapViewProxy.SetCameraPositionData/SetCameraPositionData/#kotlin.Pair[kotlin.Double,kotlin.Double]#kotlin.Float#kotlin.Boolean/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-view-proxy/-set-camera-position-data/-set-camera-position-data.md
+$dokka.location:tech.skot.libraries.map/SKMapViewProxy.SetCameraPositionData/animate/#/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-view-proxy/-set-camera-position-data/animate.md
+$dokka.location:tech.skot.libraries.map/SKMapViewProxy.SetCameraPositionData/pos/#/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-view-proxy/-set-camera-position-data/pos.md
+$dokka.location:tech.skot.libraries.map/SKMapViewProxy.SetCameraPositionData/zoomLevel/#/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-view-proxy/-set-camera-position-data/zoom-level.md
+$dokka.location:tech.skot.libraries.map/SKMapViewProxy///PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-view-proxy/index.md
+$dokka.location:tech.skot.libraries.map/SKMapViewProxy/SKMapViewProxy/#kotlin.Function1[tech.skot.libraries.map.SKMapVC.Marker,kotlin.Unit]#kotlin.collections.List[tech.skot.libraries.map.SKMapVC.Marker]#kotlin.Function1[kotlin.Pair[kotlin.Double,kotlin.Double],kotlin.Unit]?#tech.skot.libraries.map.SKMapVC.Marker?/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-view-proxy/-s-k-map-view-proxy.md
+$dokka.location:tech.skot.libraries.map/SKMapViewProxy/bindTo/#tech.skot.core.components.SKActivity#androidx.fragment.app.Fragment?#com.google.android.gms.maps.MapView#kotlin.Boolean/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-view-proxy/bind-to.md
+$dokka.location:tech.skot.libraries.map/SKMapViewProxy/markers/#/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-view-proxy/markers.md
+$dokka.location:tech.skot.libraries.map/SKMapViewProxy/onMapClicked/#/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-view-proxy/on-map-clicked.md
+$dokka.location:tech.skot.libraries.map/SKMapViewProxy/onMarkerClick/#/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-view-proxy/on-marker-click.md
+$dokka.location:tech.skot.libraries.map/SKMapViewProxy/saveState/#/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-view-proxy/save-state.md
+$dokka.location:tech.skot.libraries.map/SKMapViewProxy/selectedMarker/#/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-view-proxy/selected-marker.md
+$dokka.location:tech.skot.libraries.map/SKMapViewProxy/setCameraPosition/#kotlin.Pair[kotlin.Double,kotlin.Double]#kotlin.Float#kotlin.Boolean/PointingToDeclaration/viewlegacy/viewlegacy/tech.skot.libraries.map/-s-k-map-view-proxy/set-camera-position.md
+module:viewcontract
+tech.skot.libraries.map
+module:viewlegacy
+tech.skot.libraries.map
+tech.skot.libraries.map.di
+module:viewmodel
+tech.skot.libraries.map
+tech.skot.libraries.map.di

@@ -1,0 +1,12 @@
+//[viewmodel](../../../index.md)/[tech.skot.libraries.map.di](../index.md)/[SKMapViewInjector](index.md)
+
+# SKMapViewInjector
+
+[common]\
+interface [SKMapViewInjector](index.md)
+
+## Functions
+
+| Name | Summary |
+|---|---|
+| [sKMap](s-k-map.md) | [common]<br>abstract fun [sKMap](s-k-map.md)(onMarkerClick: ([SKMapVC.Marker](../../../../viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/-marker/index.md)) -&gt; [Unit](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html), itemsInitial: [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;[SKMapVC.Marker](../../../../viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/-marker/index.md)&gt;, onMapClickedInitial: ([Pair](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-pair/index.html)&lt;[Double](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html), [Double](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)&gt;) -&gt; [Unit](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)?, selectedMarkerInitial: [SKMapVC.Marker](../../../../viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/-marker/index.md)?): [SKMapVC](../../../../viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/index.md) |

@@ -1,0 +1,12 @@
+//[viewlegacy](../../../index.md)/[tech.skot.libraries.map.di](../index.md)/[SKMapViewInjectorImpl](index.md)
+
+# SKMapViewInjectorImpl
+
+[android]\
+class [SKMapViewInjectorImpl](index.md) : [SKMapViewInjector](../../../../viewlegacy/tech.skot.libraries.map.di/-s-k-map-view-injector/index.md)
+
+## Functions
+
+| Name | Summary |
+|---|---|
+| [sKMap](s-k-map.md) | [android]<br>open override fun [sKMap](s-k-map.md)(onMarkerClick: ([SKMapVC.Marker](../../../../viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/-marker/index.md)) -&gt; [Unit](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html), itemsInitial: [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;[SKMapVC.Marker](../../../../viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/-marker/index.md)&gt;, onMapClickedInitial: ([Pair](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-pair/index.html)&lt;[Double](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html), [Double](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html)&gt;) -&gt; [Unit](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html)?, selectedMarkerInitial: [SKMapVC.Marker](../../../../viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/-marker/index.md)?): [SKMapVC](../../../../viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/index.md) |

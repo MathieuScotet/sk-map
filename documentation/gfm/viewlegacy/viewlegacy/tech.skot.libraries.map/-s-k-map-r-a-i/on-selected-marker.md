@@ -1,0 +1,6 @@
+//[viewlegacy](../../../index.md)/[tech.skot.libraries.map](../index.md)/[SKMapRAI](index.md)/[onSelectedMarker](on-selected-marker.md)
+
+# onSelectedMarker
+
+[android]\
+abstract fun [onSelectedMarker](on-selected-marker.md)(selectedMarker: [SKMapVC.Marker](../../../../viewcontract/viewcontract/tech.skot.libraries.map/-s-k-map-v-c/-marker/index.md)?)

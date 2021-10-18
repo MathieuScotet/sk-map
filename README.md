@@ -8,7 +8,7 @@ Elle est basée sur GoogleMap
 
 Pour utiliser la librairie vous devez ajouter la ligne suivante à votre fichier _skot_librairies.properties_
 
-`com.github.skot-framework.sk-map:0.0.1-alpha54,tech.skot.libraries.map.di.skmapModule`
+`com.github.skot-framework.sk-map:0.0.2-alpha54,tech.skot.libraries.map.di.skmapModule`
 
 Cette librairie consiste en un seul SKComponent:
 

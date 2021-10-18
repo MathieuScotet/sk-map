@@ -20,6 +20,7 @@ interface SKMapVC : SKComponentVC {
     val onMarkerClick : (Marker) -> Unit
     var selectedMarker: Marker?
 
+
     /**
      *  function to call for moving camera on another location
      *  @param pos a [Pair] of [Double] representing the requested location for the center of the map

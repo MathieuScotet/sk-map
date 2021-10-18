@@ -18,14 +18,19 @@ class SKMap(
     initialItems: List<SKMapVC.Marker>,
     val selectMarkerWhenClicked: Boolean = true,
     val unselectMarkerWhenMapClicked: Boolean = true,
-    onMapClickedInitial: ((Pair<Double, Double>) -> Unit)? = null
+    onMapClickedInitial: ((Pair<Double, Double>) -> Unit)? = null,
+    var onMarkerSelected: ((SKMapVC.Marker?) -> Unit)? = null
 ) : SKComponent<SKMapVC>() {
+
 
     var selectedMarker: SKMapVC.Marker?
         get() = view.selectedMarker
         set(value) {
             view.selectedMarker = value
+            onMarkerSelected?.invoke(value)
         }
+
+
 
     var items: List<SKMapVC.Marker>
         get() = view.markers
@@ -38,7 +43,7 @@ class SKMap(
             itemsInitial = initialItems,
             onMapClickedInitial = null,
             selectedMarkerInitial = null,
-            onMarkerClick = {
+                onMarkerClick = {
                 it.onMarkerClick.invoke()
                 if (selectMarkerWhenClicked) {
                     selectedMarker = it

@@ -34,6 +34,7 @@ class SKMapViewProxy(
     override var selectedMarker: SKMapVC.Marker? by selectedMarkerLD
 
     private val setCameraPositionMessage: SKMessage<SetCameraPositionData> = SKMessage()
+    private val setCenterOnPositions: SKMessage<CenterOnPositionsData> = SKMessage()
 
     override fun setCameraPosition(
         position: Pair<Double, Double>,
@@ -41,6 +42,10 @@ class SKMapViewProxy(
         animate: Boolean
     ) {
         setCameraPositionMessage.post(SetCameraPositionData(position, zoomLevel, animate))
+    }
+
+    override fun centerOnPositions(positions : List<Pair<Double, Double>>) {
+        setCenterOnPositions.post(CenterOnPositionsData(positions))
     }
 
     override fun saveState() {
@@ -63,6 +68,9 @@ class SKMapViewProxy(
         setCameraPositionMessage.observe {
             this.setCameraPosition(it.position, it.zoomLevel, it.animate)
         }
+        setCenterOnPositions.observe {
+            this.centerOnPositions(it.positions)
+        }
     }
 
     data class SetCameraPositionData(
@@ -70,6 +78,7 @@ class SKMapViewProxy(
         val zoomLevel: Float,
         val animate: Boolean
     )
+    data class CenterOnPositionsData(val positions : List<Pair<Double, Double>>)
 }
 
 interface SKMapRAI {
@@ -82,4 +91,6 @@ interface SKMapRAI {
         zoomLevel: Float,
         animate: Boolean
     )
+
+    fun centerOnPositions(positions: List<Pair<Double,Double>>)
 }

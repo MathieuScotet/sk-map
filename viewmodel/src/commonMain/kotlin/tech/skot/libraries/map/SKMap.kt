@@ -71,6 +71,20 @@ class SKMap(
         }
     }
 
+    /**
+     * center map to show all markers currently added
+     */
+    fun centerOnMarkers(){
+        centerOnPositions(items.toPositions())
+    }
+
+    /**
+     * center map to show all positions
+     */
+    fun centerOnPositions(positions : List<Pair<Double, Double>>){
+        view.centerOnPositions(positions)
+    }
+
 
     /**
      *  function to call for moving camera on another location
@@ -81,5 +95,7 @@ class SKMap(
     fun setCameraPosition(pos: Pair<Double, Double>, zoomLevel: Float, animate: Boolean = true) {
         view.setCameraPosition(pos, zoomLevel, animate)
     }
+
+    private fun List<SKMapVC.Marker>.toPositions() : List<Pair<Double, Double>> = map { it.position }
 
 }

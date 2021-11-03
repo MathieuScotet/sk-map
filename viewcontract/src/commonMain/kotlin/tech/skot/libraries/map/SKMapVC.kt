@@ -2,6 +2,7 @@ package tech.skot.libraries.map
 
 import tech.skot.core.components.SKComponentVC
 import tech.skot.core.components.SKLayoutIsSimpleView
+import tech.skot.core.view.Color
 import tech.skot.core.view.Icon
 
 
@@ -29,22 +30,43 @@ interface SKMapVC : SKComponentVC {
      */
     fun setCameraPosition(position: Pair<Double, Double>, zoomLevel: Float, animate: Boolean)
 
+    fun centerOnPositions(positions : List<Pair<Double, Double>>)
+
 
     /**
      * data class representing a marker to show on the map
+     * @param itemId unique id for the marker, used to update position
      * @param normalIcon the [Icon] to use when marker is not selected, null to use google mapView default icon
      * @param selectedIcon the [Icon] to use when marker is selected, null to use google mapView default icon
      * @param position a [Pair] of [Double] representing the location of the marker
      * @param onMarkerClick a function type called when marker is clicked
      */
-    data class Marker(
-        val title: String,
-        val snippet: String?,
-        val normalIcon: Icon?,
-        val selectedIcon: Icon?,
-        val position: Pair<Double, Double>,
-        val onMarkerClick: () -> Unit
+    sealed class Marker(
+        open val itemId : String?,
+        open val position: Pair<Double, Double>,
+        open val onMarkerClick: () -> Unit
     )
+
+    open class IconMarker(
+        override val itemId : String?,
+        open val normalIcon: Icon,
+        open val selectedIcon: Icon,
+        override val position: Pair<Double, Double>,
+        override val onMarkerClick: () -> Unit
+    ) : Marker(itemId, position, onMarkerClick)
+
+    class ColorizedIconMarker(
+        override val itemId : String?,
+        val icon: Icon,
+        val normalColor : Color,
+        val selectedColor : Color,
+        override val position: Pair<Double, Double>,
+        override val onMarkerClick: () -> Unit
+    ) : Marker(itemId, position, onMarkerClick)
+
+
+
+
 }
 
 

@@ -1,24 +1,19 @@
 package tech.skot.libraries.map
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import androidx.fragment.app.Fragment
-import com.google.android.gms.maps.MapView
-import com.google.android.gms.maps.model.*
-import tech.skot.core.components.SKActivity
-import tech.skot.core.components.SKComponentView
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-
+import android.content.res.Resources
+import android.graphics.*
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.VectorDrawable
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import com.google.android.gms.maps.CameraUpdateFactory
-
-import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.MapView
+import com.google.android.gms.maps.model.*
+import tech.skot.core.components.SKActivity
+import tech.skot.core.components.SKComponentView
 
 
 class SKMapView(
@@ -95,47 +90,49 @@ class SKMapView(
      * Helper method to obtain BitmapDescriptor from resource.
      * Add compatibility with vector resources
      */
-    private fun getBitmapDescriptor(context: Context, vectorResId: Int): BitmapDescriptor? {
-        val vectorDrawable: Drawable? = ContextCompat.getDrawable(context, vectorResId)
-        vectorDrawable?.let {
-            return when (it) {
-                is VectorDrawable -> {
-                    vectorDrawable.setBounds(
-                        0,
-                        0,
-                        vectorDrawable.intrinsicWidth,
-                        vectorDrawable.intrinsicHeight
-                    )
-                    val bitmap: Bitmap = Bitmap.createBitmap(
-                        vectorDrawable.intrinsicWidth,
-                        vectorDrawable.intrinsicHeight,
-                        Bitmap.Config.ARGB_8888
-                    )
-                    val canvas = Canvas(bitmap)
-                    vectorDrawable.draw(canvas)
-                    BitmapDescriptorFactory.fromBitmap(bitmap)
-                }
-                else -> {
-                    BitmapDescriptorFactory.fromResource(vectorResId)
-                }
+    private fun getBitmapDescriptor(context: Context, resId: Int, color: Int?): BitmapDescriptor? {
+        val drawable: Drawable? = ContextCompat.getDrawable(context, resId)
+            ?.let { if (color != null) it.mutate() else it }
+        return drawable?.let {
+            drawable.setBounds(
+                0,
+                0,
+                drawable.intrinsicWidth,
+                drawable.intrinsicHeight
+            )
+
+            color?.let {
+                drawable.colorFilter = PorterDuffColorFilter(ContextCompat.getColor(context,color),PorterDuff.Mode.MULTIPLY)
             }
+            val bitmap: Bitmap = Bitmap.createBitmap(
+                drawable.intrinsicWidth,
+                drawable.intrinsicHeight,
+                Bitmap.Config.ARGB_8888
+            )
+
+            val canvas = Canvas(bitmap)
+            drawable.draw(canvas)
+
+            BitmapDescriptorFactory.fromBitmap(bitmap)
         }
-        return null
     }
+
+
+
 
 
     override fun onSelectedMarker(selectedMarker: SKMapVC.Marker?) {
         mapView.getMapAsync {
-            lastSelectedMarker?.first?.normalIcon?.let {
-                lastSelectedMarker?.second?.setIcon(getBitmapDescriptor(context, it.res))
+            lastSelectedMarker?.let { current ->
+                getIcon(current.first, false)?.let {
+                    current.second.setIcon(it)
+                }
             }
             lastSelectedMarker = items.find {
                 it.first == selectedMarker
             }?.also { newSelectedMarker ->
-                newSelectedMarker.first.selectedIcon?.also {
-                    newSelectedMarker.second.setIcon(getBitmapDescriptor(context, it.res))
-                } ?: kotlin.run {
-                    newSelectedMarker.second.setIcon(null)
+                getIcon(newSelectedMarker.first, true).let {
+                    newSelectedMarker.second.setIcon(it)
                 }
             }
         }
@@ -143,9 +140,48 @@ class SKMapView(
 
     override fun onItems(items: List<SKMapVC.Marker>) {
         mapView.getMapAsync { map ->
-            lastSelectedMarker = null
-            map.clear()
-            this.items = items.mapNotNull { skMarker ->
+            //first parts -> remove
+            //second parts -> update
+            val currentMarker = this.items.partition { currentItem ->
+                currentItem.first.itemId == null || items.any { currentItem.first.itemId == it.itemId }
+            }
+
+            //first parts -> update
+            //second parts -> add
+            val newMarkers = items.partition { marker ->
+                marker.itemId != null && this.items.any {
+                    marker.itemId != null && marker.itemId == it.first.itemId
+                }
+            }
+
+            //items to remove from map
+            currentMarker.first.forEach { pair ->
+                if (pair.first.itemId == lastSelectedMarker?.first?.itemId) {
+                    lastSelectedMarker = null
+                }
+                pair.second.remove()
+            }
+
+            //items to update on map
+            val updatedMarker = currentMarker.second.mapNotNull { currentPair ->
+                newMarkers.first.find {
+                    it.itemId == currentPair.first.itemId
+                }?.let {
+                    Pair(it, currentPair.second.apply {
+                        this.position = (LatLng(
+                            it.position.first,
+                            it.position.second
+                        ))
+
+                        getIcon(it, lastSelectedMarker?.first?.itemId == it.itemId).let {
+                            this.setIcon(it)
+                        }
+                    })
+                }
+            }
+
+            //items to add to map
+            val addedMarker = newMarkers.second.mapNotNull { skMarker ->
                 val marker = map.addMarker(
                     MarkerOptions()
                         .position(
@@ -154,22 +190,30 @@ class SKMapView(
                                 skMarker.position.second
                             )
                         ).apply {
-                            skMarker.normalIcon?.let {
-                                this.icon(getBitmapDescriptor(context, it.res))
+                            getIcon(skMarker, false).let {
+                                this.icon(it)
                             }
                         }
-
                 )
                 marker?.let {
                     Pair(skMarker, marker)
                 }
             }
+
+            this.items = updatedMarker + addedMarker
         }
     }
 
-    override fun setCameraPosition(position: Pair<Double, Double>, zoomLevel: Float, animate: Boolean) {
+    override fun setCameraPosition(
+        position: Pair<Double, Double>,
+        zoomLevel: Float,
+        animate: Boolean
+    ) {
         val cameraUpdate =
-            CameraUpdateFactory.newLatLngZoom(LatLng(position.first, position.second), zoomLevel)
+            CameraUpdateFactory.newLatLngZoom(
+                LatLng(position.first, position.second),
+                zoomLevel
+            )
         mapView.getMapAsync {
             if (animate) {
                 it.animateCamera(cameraUpdate)
@@ -178,5 +222,42 @@ class SKMapView(
             }
         }
     }
+
+    override fun centerOnPositions(positions: List<Pair<Double, Double>>) {
+        if (positions.isNotEmpty()) {
+            val latLngBoundsBuilder = LatLngBounds.builder()
+            positions.forEach {
+                latLngBoundsBuilder.include(LatLng(it.first, it.second))
+            }
+            val latLngBound = CameraUpdateFactory.newLatLngBounds(
+                latLngBoundsBuilder.build(),
+                (16 * Resources.getSystem().displayMetrics.density).toInt()
+            )
+            mapView.getMapAsync {
+                it.animateCamera(latLngBound)
+            }
+        }
+    }
+
+
+    private fun getIcon(marker: SKMapVC.Marker, selected: Boolean): BitmapDescriptor? {
+        return when (marker) {
+            is SKMapVC.IconMarker -> {
+                if (selected) {
+                    getBitmapDescriptor(context, marker.selectedIcon.res, null)
+                } else {
+                    getBitmapDescriptor(context, marker.normalIcon.res, null)
+                }
+            }
+            is SKMapVC.ColorizedIconMarker -> {
+                if (selected) {
+                    getBitmapDescriptor(context, marker.icon.res, marker.selectedColor.res)
+                } else {
+                    getBitmapDescriptor(context, marker.icon.res, marker.normalColor.res)
+                }
+            }
+        }
+    }
+
 
 }

@@ -14,6 +14,7 @@ import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.*
 import tech.skot.core.components.SKActivity
 import tech.skot.core.components.SKComponentView
+import tech.skot.core.view.Icon
 
 
 class SKMapView(
@@ -27,6 +28,9 @@ class SKMapView(
 
 
     private var items: List<Pair<SKMapVC.Marker, Marker>> = emptyList()
+
+
+    var onCreateCustomMarkerIcon : ((SKMapVC.CustomMarker, selected : Boolean) -> BitmapDescriptor)? = null
 
 
     init {
@@ -255,6 +259,9 @@ class SKMapView(
                 } else {
                     getBitmapDescriptor(context, marker.icon.res, marker.normalColor.res)
                 }
+            }
+            is SKMapVC.CustomMarker -> {
+                onCreateCustomMarkerIcon?.invoke(marker, selected)?: throw NoSuchFieldException("onCreateCustomMarkerIcon must not be null with CustomMarker")
             }
         }
     }

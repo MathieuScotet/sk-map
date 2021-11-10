@@ -64,7 +64,12 @@ interface SKMapVC : SKComponentVC {
         override val onMarkerClick: () -> Unit
     ) : Marker(itemId, position, onMarkerClick)
 
-
+    class   CustomMarker(
+        override val itemId : String?,
+        val data : Any,
+        override val position: Pair<Double, Double>,
+        override val onMarkerClick: () -> Unit
+    ) : Marker(itemId, position, onMarkerClick)
 
 
 }

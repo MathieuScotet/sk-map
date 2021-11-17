@@ -7,13 +7,6 @@ import tech.skot.core.components.SKActivity
 import tech.skot.core.components.SKComponentViewProxy
 import tech.skot.view.live.MutableSKLiveData
 import tech.skot.view.live.SKMessage
-import kotlin.Boolean
-import kotlin.Double
-import kotlin.Float
-import kotlin.Function1
-import kotlin.Pair
-import kotlin.Unit
-import kotlin.collections.List
 
 class SKMapViewProxy(
     override val onMarkerClick: Function1<SKMapVC.Marker, Unit>,
@@ -44,7 +37,7 @@ class SKMapViewProxy(
         setCameraPositionMessage.post(SetCameraPositionData(position, zoomLevel, animate))
     }
 
-    override fun centerOnPositions(positions : List<Pair<Double, Double>>) {
+    override fun centerOnPositions(positions: List<Pair<Double, Double>>) {
         setCenterOnPositions.post(CenterOnPositionsData(positions))
     }
 
@@ -55,10 +48,8 @@ class SKMapViewProxy(
     override fun bindTo(
         activity: SKActivity,
         fragment: Fragment?,
-        binding: MapView,
-        collectingObservers: Boolean
+        binding: MapView
     ): SKMapView = SKMapView(this, activity, fragment, binding).apply {
-        collectObservers = collectingObservers
         itemsLD.observe {
             onItems(it)
         }
@@ -78,7 +69,8 @@ class SKMapViewProxy(
         val zoomLevel: Float,
         val animate: Boolean
     )
-    data class CenterOnPositionsData(val positions : List<Pair<Double, Double>>)
+
+    data class CenterOnPositionsData(val positions: List<Pair<Double, Double>>)
 }
 
 interface SKMapRAI {
@@ -92,5 +84,5 @@ interface SKMapRAI {
         animate: Boolean
     )
 
-    fun centerOnPositions(positions: List<Pair<Double,Double>>)
+    fun centerOnPositions(positions: List<Pair<Double, Double>>)
 }

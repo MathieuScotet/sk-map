@@ -5,5 +5,5 @@ plugins {
 }
 
 dependencies {
-    api("com.google.android.gms:play-services-maps:17.0.1")
+    api("com.google.android.gms:play-services-maps:18.0.0")
 }

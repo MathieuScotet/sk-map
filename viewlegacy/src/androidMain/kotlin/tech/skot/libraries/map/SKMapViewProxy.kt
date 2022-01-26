@@ -12,7 +12,7 @@ class SKMapViewProxy(
     override val onMarkerClick: Function1<SKMapVC.Marker, Unit>,
     itemsInitial: List<SKMapVC.Marker>,
     onMapClickedInitial: Function1<Pair<Double, Double>, Unit>?,
-    selectedMarkerInitial: SKMapVC.Marker?
+    selectedMarkerInitial: SKMapVC.Marker?,
 ) : SKComponentViewProxy<MapView>(), SKMapVC {
 
     private val itemsLD: MutableSKLiveData<List<SKMapVC.Marker>> = MutableSKLiveData(itemsInitial)
@@ -27,7 +27,31 @@ class SKMapViewProxy(
     override var selectedMarker: SKMapVC.Marker? by selectedMarkerLD
 
     private val setCameraPositionMessage: SKMessage<SetCameraPositionData> = SKMessage()
-    private val setCenterOnPositions: SKMessage<CenterOnPositionsData> = SKMessage()
+    private val setCenterOnPositionsMessage: SKMessage<CenterOnPositionsData> = SKMessage()
+    private val setCameraZoomMessage: SKMessage<SetCameraZoomData> = SKMessage()
+    private val showMyLocationButtonMessage: SKMessage<ShowMyLocationButtonData> = SKMessage()
+    private val getMapBoundsMessage: SKMessage<GetMapBoundsData> = SKMessage()
+    private val onMapBoundsChangeMessage: SKMessage<OnMapBoundsChangeData> = SKMessage()
+
+    override fun showMyLocationButton(
+        show: Boolean,
+        onPermissionError: (() -> Unit)?
+    ) {
+        showMyLocationButtonMessage.post(
+            ShowMyLocationButtonData(
+                show,
+                onPermissionError
+            )
+        )
+    }
+
+    override fun getMapBounds(onResult: (SKMapVC.MapBounds) -> Unit) {
+        getMapBoundsMessage.post(GetMapBoundsData(onResult))
+    }
+
+    override fun onMapBoundsChange(onResult: ((SKMapVC.MapBounds) -> Unit)?) {
+        onMapBoundsChangeMessage.post(OnMapBoundsChangeData(onResult))
+    }
 
     override fun setCameraPosition(
         position: Pair<Double, Double>,
@@ -38,8 +62,13 @@ class SKMapViewProxy(
     }
 
     override fun centerOnPositions(positions: List<Pair<Double, Double>>) {
-        setCenterOnPositions.post(CenterOnPositionsData(positions))
+        setCenterOnPositionsMessage.post(CenterOnPositionsData(positions))
     }
+
+    override fun setCameraZoom(zoomLevel: Float, animate: Boolean) {
+        setCameraZoomMessage.post(SetCameraZoomData(zoomLevel, animate))
+    }
+
 
     override fun saveState() {
     }
@@ -56,11 +85,26 @@ class SKMapViewProxy(
         selectedMarkerLD.observe {
             onSelectedMarker(it)
         }
+
         setCameraPositionMessage.observe {
             this.setCameraPosition(it.position, it.zoomLevel, it.animate)
         }
-        setCenterOnPositions.observe {
+        setCenterOnPositionsMessage.observe {
             this.centerOnPositions(it.positions)
+        }
+        setCameraZoomMessage.observe {
+            this.setCameraZoom(it.zoomLevel, it.animate)
+        }
+        showMyLocationButtonMessage.observe {
+            this.showMyLocationButton(it.show, it.onPermissionError)
+        }
+
+        getMapBoundsMessage.observe {
+            this.getMapBounds(it.onResult)
+        }
+
+        onMapBoundsChangeMessage.observe {
+            this.onMapBoundsChange(it.onResult)
         }
     }
 
@@ -70,7 +114,23 @@ class SKMapViewProxy(
         val animate: Boolean
     )
 
+    data class SetCameraZoomData(
+        val zoomLevel: Float,
+        val animate: Boolean
+    )
+
+    data class ShowMyLocationButtonData(
+        val show: Boolean,
+        val onPermissionError: (() -> Unit)?
+    )
+
     data class CenterOnPositionsData(val positions: List<Pair<Double, Double>>)
+
+    data class GetMapBoundsData(
+        val onResult: (SKMapVC.MapBounds) -> Unit
+    )
+
+    data class OnMapBoundsChangeData(val onResult: ((SKMapVC.MapBounds) -> Unit)?)
 }
 
 interface SKMapRAI {
@@ -85,4 +145,19 @@ interface SKMapRAI {
     )
 
     fun centerOnPositions(positions: List<Pair<Double, Double>>)
+
+    fun setCameraZoom(zoomLevel: Float, animate: Boolean)
+
+    fun showMyLocationButton(
+        show: Boolean,
+        onPermissionError: (() -> Unit)?
+    )
+
+    fun getMapBounds(
+        onResult: (SKMapVC.MapBounds) -> Unit
+    )
+
+    fun onMapBoundsChange(
+        onResult: ((SKMapVC.MapBounds) -> Unit)?
+    )
 }

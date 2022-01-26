@@ -4,6 +4,7 @@ import tech.skot.core.di.InjectorMock
 import tech.skot.core.di.module
 import tech.skot.libraries.map.SKMapVC
 import tech.skot.libraries.map.SKMapViewMock
+import tech.skot.libraries.map.view.Permissions
 
 class SKMapViewInjectorMock : SKMapViewInjector {
     override fun sKMap(

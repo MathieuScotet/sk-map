@@ -1,9 +1,13 @@
 package tech.skot.libraries.map.di
 
+import tech.skot.libraries.map.DeclaredPermissionHelperImpl
 import tech.skot.core.di.BaseInjector
 import tech.skot.core.di.module
+import tech.skot.libraries.map.DeclaredPermissionHelper
 import tech.skot.libraries.map.SKMapVC
 import tech.skot.libraries.map.SKMapViewProxy
+import tech.skot.libraries.map.view.Permissions
+import tech.skot.libraries.map.view.PermissionsImpl
 
 class SKMapViewInjectorImpl : SKMapViewInjector {
     override fun sKMap(
@@ -18,4 +22,6 @@ class SKMapViewInjectorImpl : SKMapViewInjector {
 
 val skmapModule = module<BaseInjector> {
     single<SKMapViewInjector> { SKMapViewInjectorImpl() }
+    single<Permissions> { PermissionsImpl() }
+    single<DeclaredPermissionHelper> { DeclaredPermissionHelperImpl(get()) }
 }

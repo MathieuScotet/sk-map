@@ -16,6 +16,7 @@ kotlin {
             dependencies {
                 implementation(project(":viewmodel"))
                 implementation("tech.skot:viewmodelTests:${Versions.framework}")
+                implementation("tech.skot:core-jvm:${Versions.framework}")
             }
         }
     }

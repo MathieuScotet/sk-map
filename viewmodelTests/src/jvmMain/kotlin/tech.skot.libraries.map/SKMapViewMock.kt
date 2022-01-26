@@ -29,11 +29,47 @@ class SKMapViewMock(override val onMarkerClick: (SKMapVC.Marker) -> Unit,
         val position: Pair<Double, Double>,
         val zoomLevel: Float,
         val animate: Boolean
-    ){
+    )
 
-    }
+    val setCameraZoomCalls = mutableListOf<SetCameraZoomCall>()
+    data class SetCameraZoomCall(
+        val zoomLevel: Float,
+        val animate: Boolean
+    )
+
+    val getMapBoundsCalls = mutableListOf<GetMapBoundsCall>()
+    data class GetMapBoundsCall(
+        val onResult: ((SKMapVC.MapBounds) -> Unit)?
+    )
+
+    val onMapBoundsChangeCalls = mutableListOf<OnMapBoundsChangeCall>()
+    data class OnMapBoundsChangeCall(
+        val onResult: ((SKMapVC.MapBounds) -> Unit)?
+    )
+
+    val showMyLocationButtonCalls = mutableListOf<ShowMyLocationButtonCall>()
+    data class ShowMyLocationButtonCall(
+        val show: Boolean,
+        val onPermissionError: (() -> Unit)?
+    )
 
     override fun centerOnPositions(positions: List<Pair<Double, Double>>) {
         centerPositionsCalls.add(CenterPositionsCall(positions))
+    }
+
+    override fun setCameraZoom(zoomLevel: Float, animate: Boolean) {
+        setCameraZoomCalls.add(SetCameraZoomCall(zoomLevel, animate))
+    }
+
+    override fun showMyLocationButton(show: Boolean, onPermissionError: (() -> Unit)?) {
+        showMyLocationButtonCalls.add(ShowMyLocationButtonCall(show, onPermissionError))
+    }
+
+    override fun getMapBounds(onResult: (SKMapVC.MapBounds) -> Unit) {
+        getMapBoundsCalls.add(GetMapBoundsCall(onResult))
+    }
+
+    override fun onMapBoundsChange(onResult: ((SKMapVC.MapBounds) -> Unit)?) {
+        onMapBoundsChangeCalls.add(OnMapBoundsChangeCall(onResult))
     }
 }

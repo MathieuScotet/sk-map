@@ -1,20 +1,24 @@
 package tech.skot.libraries.map
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.PackageManager
 import android.content.res.Resources
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.*
+import tech.skot.core.SKLog
 import tech.skot.core.components.SKActivity
 import tech.skot.core.components.SKComponentView
-import tech.skot.core.view.Icon
 
 
 class SKMapView(
@@ -30,44 +34,46 @@ class SKMapView(
     private var items: List<Pair<SKMapVC.Marker, Marker>> = emptyList()
 
 
-    var onCreateCustomMarkerIcon : ((SKMapVC.CustomMarker, selected : Boolean) -> BitmapDescriptor)? = null
+    /**
+     * use it to create BitmapDescriptor in case of  [CustomMarker][SKMapVC.CustomMarker] use
+     */
+    var onCreateCustomMarkerIcon: ((SKMapVC.CustomMarker, selected: Boolean) -> BitmapDescriptor)? =
+        null
 
 
     init {
-        lifecycle.addObserver(object : LifecycleObserver {
-
-            @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-            fun onDestroy() {
+        lifecycle.addObserver(object : DefaultLifecycleObserver {
+            override fun onDestroy(owner: LifecycleOwner) {
+                super.onDestroy(owner)
                 mapView.onDestroy()
             }
 
-            @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-            fun onCreate() {
+            override fun onCreate(owner: LifecycleOwner) {
+                super.onCreate(owner)
                 mapView.onCreate(null)
             }
 
-            @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-            fun onPause() {
+            override fun onPause(owner: LifecycleOwner) {
+                super.onPause(owner)
                 mapView.onPause()
             }
 
-            @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-            fun onResume() {
+            override fun onResume(owner: LifecycleOwner) {
+                super.onResume(owner)
                 mapView.onResume()
             }
 
-            @OnLifecycleEvent(Lifecycle.Event.ON_START)
-            fun onStart() {
+            override fun onStart(owner: LifecycleOwner) {
+                super.onStart(owner)
                 mapView.onStart()
             }
 
-            @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-            fun onStop() {
+            override fun onStop(owner: LifecycleOwner) {
+                super.onStop(owner)
                 mapView.onStop()
             }
-
-
         })
+
 
 
 
@@ -76,6 +82,7 @@ class SKMapView(
             it.setOnMapClickListener {
                 proxy.onMapClicked?.invoke(Pair(it.latitude, it.longitude))
             }
+
 
             it.setOnMarkerClickListener { clickedMarker ->
                 val item = items.find { (_, marker) ->
@@ -106,7 +113,10 @@ class SKMapView(
             )
 
             color?.let {
-                drawable.colorFilter = PorterDuffColorFilter(ContextCompat.getColor(context,color),PorterDuff.Mode.MULTIPLY)
+                drawable.colorFilter = PorterDuffColorFilter(
+                    ContextCompat.getColor(context, color),
+                    PorterDuff.Mode.MULTIPLY
+                )
             }
             val bitmap: Bitmap = Bitmap.createBitmap(
                 drawable.intrinsicWidth,
@@ -120,9 +130,6 @@ class SKMapView(
             BitmapDescriptorFactory.fromBitmap(bitmap)
         }
     }
-
-
-
 
 
     override fun onSelectedMarker(selectedMarker: SKMapVC.Marker?) {
@@ -208,6 +215,7 @@ class SKMapView(
         }
     }
 
+
     override fun setCameraPosition(
         position: Pair<Double, Double>,
         zoomLevel: Float,
@@ -244,6 +252,77 @@ class SKMapView(
     }
 
 
+    override fun getMapBounds(onResult: (SKMapVC.MapBounds) -> Unit) {
+        mapView.getMapAsync {
+            it.projection.visibleRegion.latLngBounds.let {
+                onResult(
+                    SKMapVC.MapBounds(
+                        it.northeast.latitude to it.northeast.longitude,
+                        it.southwest.latitude to it.southwest.longitude
+                    )
+                )
+            }
+        }
+    }
+
+    override fun onMapBoundsChange(onResult: ((SKMapVC.MapBounds) -> Unit)?) {
+        mapView.getMapAsync {
+            if (onResult == null) {
+                it.setOnCameraIdleListener(null)
+            } else {
+                it.setOnCameraIdleListener {
+                    it.projection.visibleRegion.latLngBounds.let {
+                        onResult(
+                            SKMapVC.MapBounds(
+                                it.northeast.latitude to it.northeast.longitude,
+                                it.southwest.latitude to it.southwest.longitude
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+
+    override fun setCameraZoom(zoomLevel: Float, animate: Boolean) {
+        mapView.getMapAsync {
+            CameraUpdateFactory.zoomTo(zoomLevel).let { cameraUpdate ->
+                if (animate) {
+                    it.animateCamera(cameraUpdate)
+                } else {
+                    it.moveCamera(cameraUpdate)
+                }
+            }
+
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    override fun showMyLocationButton(
+        show: Boolean,
+        onPermissionError: (() -> Unit)?
+    ) {
+        mapView.getMapAsync {
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(
+                    context,
+                    android.Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                SKLog.d("enabled button :$show")
+                it.isMyLocationEnabled = show
+            } else {
+                SKLog.d("permission error :$show")
+                onPermissionError?.invoke()
+            }
+        }
+    }
+
+
     private fun getIcon(marker: SKMapVC.Marker, selected: Boolean): BitmapDescriptor? {
         return when (marker) {
             is SKMapVC.IconMarker -> {
@@ -261,7 +340,8 @@ class SKMapView(
                 }
             }
             is SKMapVC.CustomMarker -> {
-                onCreateCustomMarkerIcon?.invoke(marker, selected)?: throw NoSuchFieldException("onCreateCustomMarkerIcon must not be null with CustomMarker")
+                onCreateCustomMarkerIcon?.invoke(marker, selected)
+                    ?: throw NoSuchFieldException("onCreateCustomMarkerIcon must not be null with CustomMarker")
             }
         }
     }

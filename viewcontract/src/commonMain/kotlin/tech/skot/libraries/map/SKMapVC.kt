@@ -4,6 +4,7 @@ import tech.skot.core.components.SKComponentVC
 import tech.skot.core.components.SKLayoutIsSimpleView
 import tech.skot.core.view.Color
 import tech.skot.core.view.Icon
+import tech.skot.libraries.map.SKMapVC.Marker
 
 
 /**
@@ -12,14 +13,13 @@ import tech.skot.core.view.Icon
  * @property markers the list of [markers][Marker] shown on the map
  * @property onMapClicked a function type called when map clicked, can be null if map click is not used
  * @property selectedMarker the currentSelected Marker, use it to select a marker instead of previous, or to unselect
+ * @property onMapBoundsChange called each time [MapBounds][SKMapVC.MapBounds] change (when mapview is idle)
  *
  */
 @SKLayoutIsSimpleView
 interface SKMapVC : SKComponentVC {
     var markers: List<Marker>
-    var onMapClicked: ((Pair<Double, Double>) -> Unit)?
-    val onMarkerClick : (Marker) -> Unit
-    var selectedMarker: Marker?
+    var onMapBoundsChange: ((SKMapVC.MapBounds) -> Unit)?
 
 
     /**
@@ -28,41 +28,33 @@ interface SKMapVC : SKComponentVC {
      *  @param zoomLevel a [Float] representing the zoom level to use
      *  @param animate true if the position change must be animated, false otherwise
      */
-    fun setCameraPosition(position: Pair<Double, Double>, zoomLevel: Float, animate: Boolean)
+    fun setCameraPosition(position: LatLng, zoomLevel: Float, animate: Boolean)
 
     /**
      *  function to call for moving camera to show all positions of the list
      *  @param positions list of [Pair] describing the Lat Lng of positions
      */
-    fun centerOnPositions(positions : List<Pair<Double, Double>>)
+    fun centerOnPositions(positions: List<LatLng>)
 
     /**
      * change Camera zoom level with or without animation
      * @param zoomLevel the zoomLevel to apply
      * @param animate true to animate zoom change
      */
-    fun setCameraZoom(zoomLevel : Float, animate: Boolean)
+    fun setCameraZoom(zoomLevel: Float, animate: Boolean)
 
     /**
      * Show my location button
      * @param show : true to show my location button
      * @param onPermissionError a callback fired if no location permissions is granted
      */
-    fun showMyLocationButton(show : Boolean, onPermissionError : (() -> Unit)?)
+    fun showMyLocationButton(show: Boolean, onPermissionError: (() -> Unit)?)
 
     /**
      * get current MapBounds
      * @param onResult, called once with current [MapBounds][SKMapVC.MapBounds]
      */
-    fun getMapBounds(onResult : (SKMapVC.MapBounds) -> Unit)
-
-    /**
-     * called on MapBoundsChange when mapview is idle
-     * @param onResult, called each time [MapBounds][SKMapVC.MapBounds] change
-     */
-    fun onMapBoundsChange(onResult : ((SKMapVC.MapBounds) -> Unit)?)
-
-
+    fun getMapBounds(onResult: (SKMapVC.MapBounds) -> Unit)
 
     /**
      * data class representing a marker to show on the map
@@ -71,9 +63,9 @@ interface SKMapVC : SKComponentVC {
      * @param onMarkerClick a function type called when marker is clicked
      */
     sealed class Marker(
-        open val itemId : String?,
-        open val position: Pair<Double, Double>,
-        open val onMarkerClick: () -> Unit
+        open val id: String?,
+        open val position: LatLng,
+        open val onMarkerClick: (() -> Unit)?
     )
 
     /**
@@ -88,12 +80,12 @@ interface SKMapVC : SKComponentVC {
      * @see CustomMarker
      */
     open class IconMarker(
-        override val itemId : String?,
+        override val id: String?,
         open val normalIcon: Icon,
         open val selectedIcon: Icon,
-        override val position: Pair<Double, Double>,
-        override val onMarkerClick: () -> Unit
-    ) : Marker(itemId, position, onMarkerClick)
+        override val position: LatLng,
+        override val onMarkerClick: (() -> Unit)? = null
+    ) : Marker(id, position, onMarkerClick)
 
 
     /**
@@ -110,13 +102,13 @@ interface SKMapVC : SKComponentVC {
      * @see CustomMarker
      */
     class ColorizedIconMarker(
-        override val itemId : String?,
+        override val id: String?,
         val icon: Icon,
-        val normalColor : Color,
-        val selectedColor : Color,
-        override val position: Pair<Double, Double>,
-        override val onMarkerClick: () -> Unit
-    ) : Marker(itemId, position, onMarkerClick)
+        val normalColor: Color,
+        val selectedColor: Color,
+        override val position: LatLng,
+        override val onMarkerClick: (() -> Unit)? = null
+    ) : Marker(id, position, onMarkerClick)
 
     /**
      * data class representing a marker to show on map.
@@ -129,12 +121,12 @@ interface SKMapVC : SKComponentVC {
      * @see ColorizedIconMarker
      * @see IconMarker
      */
-    class   CustomMarker(
-        override val itemId : String?,
-        val data : Any,
-        override val position: Pair<Double, Double>,
-        override val onMarkerClick: () -> Unit
-    ) : Marker(itemId, position, onMarkerClick)
+    class CustomMarker(
+        override val id: String?,
+        val data: Any,
+        override val position: LatLng,
+        override val onMarkerClick: (() -> Unit)? = null
+    ) : Marker(id, position, onMarkerClick)
 
 
     /**
@@ -143,11 +135,24 @@ interface SKMapVC : SKComponentVC {
      * @param southwest a [Pair] describing the Lat Lng of the map southwest point
      */
     data class MapBounds(
-        val northeast : Pair<Double, Double>,
-        val southwest : Pair<Double, Double>,
+        val northeast: LatLng,
+        val southwest: LatLng,
     )
 
+
 }
+
+interface InternalSKMapVC : SKMapVC {
+    var selectMarkerOnClick: Boolean
+    var unselectMarkerOnMapClick: Boolean
+    var onMapClicked: ((LatLng) -> Unit)?
+    var onMarkerClicked: ((Marker) -> Unit)?
+    var onMarkerSelected: ((Marker?) -> Unit)?
+    var selectedMarker: Marker?
+}
+
+typealias LatLng = Pair<Double, Double>
+
 
 
 

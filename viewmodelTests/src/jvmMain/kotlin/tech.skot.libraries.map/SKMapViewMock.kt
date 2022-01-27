@@ -2,13 +2,24 @@ package tech.skot.libraries.map
 
 import tech.skot.core.components.SKComponentViewMock
 
-class SKMapViewMock(override val onMarkerClick: (SKMapVC.Marker) -> Unit,
-                     itemsInitial: List<SKMapVC.Marker>,
-                     onMapClickedInitial: ((Pair<Double, Double>) -> Unit)?,
-                     selectedMarkerInitial: SKMapVC.Marker?) : SKComponentViewMock(), SKMapVC {
+class SKMapViewMock(
+    itemsInitial: List<SKMapVC.Marker>,
+    selectedMarkerInitial: SKMapVC.Marker?,
+    selectMarkerOnClickInitial : Boolean,
+    unselectMarkerOnMapClickInitial : Boolean,
+    onMarkerClickedInitial: ((SKMapVC.Marker) -> Unit)?,
+    onMapClickedInitial: ((Pair<Double, Double>) -> Unit)?,
+    onMarkerSelectedInitial: ((SKMapVC.Marker?) -> Unit)?,
+    onMapBoundChangeInitial: ((SKMapVC.MapBounds) -> Unit)?,
+) : SKComponentViewMock(), InternalSKMapVC {
     override var markers: List<SKMapVC.Marker> = itemsInitial
     override var onMapClicked: ((Pair<Double, Double>) -> Unit)? = onMapClickedInitial
+    override var onMarkerClicked: ((SKMapVC.Marker) -> Unit)? = onMarkerClickedInitial
+    override var onMarkerSelected: ((SKMapVC.Marker?) -> Unit)? = onMarkerSelectedInitial
     override var selectedMarker: SKMapVC.Marker? = selectedMarkerInitial
+    override var selectMarkerOnClick: Boolean = selectMarkerOnClickInitial
+    override var unselectMarkerOnMapClick: Boolean = unselectMarkerOnMapClickInitial
+    override var onMapBoundsChange: ((SKMapVC.MapBounds) -> Unit)? = onMapBoundChangeInitial
 
     override fun setCameraPosition(
         position: Pair<Double, Double>,
@@ -19,12 +30,14 @@ class SKMapViewMock(override val onMarkerClick: (SKMapVC.Marker) -> Unit,
     }
 
     val centerPositionsCalls = mutableListOf<CenterPositionsCall>()
+
     data class CenterPositionsCall(
-        val positions : List<Pair<Double, Double>>
+        val positions: List<Pair<Double, Double>>
     )
 
 
     val setCameraPositionCalls = mutableListOf<SetCameraPositionCall>()
+
     data class SetCameraPositionCall(
         val position: Pair<Double, Double>,
         val zoomLevel: Float,
@@ -32,22 +45,20 @@ class SKMapViewMock(override val onMarkerClick: (SKMapVC.Marker) -> Unit,
     )
 
     val setCameraZoomCalls = mutableListOf<SetCameraZoomCall>()
+
     data class SetCameraZoomCall(
         val zoomLevel: Float,
         val animate: Boolean
     )
 
     val getMapBoundsCalls = mutableListOf<GetMapBoundsCall>()
+
     data class GetMapBoundsCall(
         val onResult: ((SKMapVC.MapBounds) -> Unit)?
     )
 
-    val onMapBoundsChangeCalls = mutableListOf<OnMapBoundsChangeCall>()
-    data class OnMapBoundsChangeCall(
-        val onResult: ((SKMapVC.MapBounds) -> Unit)?
-    )
-
     val showMyLocationButtonCalls = mutableListOf<ShowMyLocationButtonCall>()
+
     data class ShowMyLocationButtonCall(
         val show: Boolean,
         val onPermissionError: (() -> Unit)?
@@ -69,7 +80,4 @@ class SKMapViewMock(override val onMarkerClick: (SKMapVC.Marker) -> Unit,
         getMapBoundsCalls.add(GetMapBoundsCall(onResult))
     }
 
-    override fun onMapBoundsChange(onResult: ((SKMapVC.MapBounds) -> Unit)?) {
-        onMapBoundsChangeCalls.add(OnMapBoundsChangeCall(onResult))
-    }
 }

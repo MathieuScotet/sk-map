@@ -13,72 +13,142 @@ import tech.skot.libraries.map.view.Permissions
  * Based on google Map
  * no iOS version at this time
  *
- * @param initialItems the [markers][SKMapVC.Marker] shown on the map
- * @param selectMarkerWhenClicked indicate if a marker must be selected when clicked
- * @param unselectMarkerWhenMapClicked indicate if the selected marker must be unselect when map is clicked
+ * @param markersInitial the [markers][SKMapVC.Marker] shown on the map
+ * @param selectedMarkerInitial the first marker selected
+ * @param selectMarkerOnClickInitial indicate if a marker must be selected when clicked
+ * @param unselectMarkerOnMapClickInitial indicate if the selected marker must be unselect when map is clicked
+ * @param onMarkerClickedInitial nullable function type which allow to obtain the clicked marker
  * @param onMapClickedInitial nullable function type which allow to obtain the map click position
+ * @param onMarkerSelectedInitial nullable function type which allow to obtain the selected marker, or null on unselect
+ * @param onMapBoundsChangeInitial nullable function type which allow to obtain the MapBounds on each change
+ *
  */
+@Suppress("unused")
 class SKMap(
-    initialItems: List<SKMapVC.Marker>,
-    val selectMarkerWhenClicked: Boolean = true,
-    val unselectMarkerWhenMapClicked: Boolean = true,
-    onMapClickedInitial: ((Pair<Double, Double>) -> Unit)? = null,
-    var onMarkerSelected: ((SKMapVC.Marker?) -> Unit)? = null,
+    markersInitial: List<SKMapVC.Marker>,
+    selectedMarkerInitial: SKMapVC.Marker? = null,
+    selectMarkerOnClickInitial: Boolean = true,
+    unselectMarkerOnMapClickInitial: Boolean = true,
+    onMarkerClickedInitial: ((SKMapVC.Marker) -> Unit)? = null,
+    onMapClickedInitial: ((LatLng) -> Unit)? = null,
+    onMarkerSelectedInitial: ((SKMapVC.Marker?) -> Unit)? = null,
+    onMapBoundsChangeInitial: ((SKMapVC.MapBounds) -> Unit)? = null,
+) : SKComponent<SKMapVC>() {
 
-    ) : SKComponent<SKMapVC>() {
-
-    val declaredPermissionHelper: DeclaredPermissionHelper = get()
-    val permissions: Permissions = get()
-
-
-    var selectedMarker: SKMapVC.Marker?
-        get() = view.selectedMarker
+    private val declaredPermissionHelper: DeclaredPermissionHelper = get()
+    private val permissions: Permissions = get()
+    override val view: SKMapVC = skmapViewInjector.sKMap(
+        markersInitial = markersInitial,
+        selectedMarkerInitial = selectedMarkerInitial,
+        selectMarkerOnClickInitial = selectMarkerOnClickInitial,
+        unselectMarkerOnMapClickInitial = unselectMarkerOnMapClickInitial,
+        onMarkerClickInitial = null,
+        onMapClickedInitial = onMapClickedInitial,
+        onMarkerSelectedInitial = onMarkerSelectedInitial,
+        onMapBoundsChangeInitial = onMapBoundsChangeInitial,
+    )
+    private val internalView = view as InternalSKMapVC
+    private val internalOnMapClicked: (LatLng) -> Unit = {
+        onMapClicked?.invoke(it)
+        if (internalView.unselectMarkerOnMapClick) {
+            selectedMarker = null
+        }
+    }
+    private val internalOnMarkerClicked: (SKMapVC.Marker) -> Unit = {
+        onMarkerClicked?.invoke(it)
+        it.onMarkerClick?.invoke()
+        if (internalView.selectMarkerOnClick) {
+            selectedMarker = it
+        }
+    }
+    var selectMarkerOnClick: Boolean
+        get() = internalView.selectMarkerOnClick
         set(value) {
-            view.selectedMarker = value
-            onMarkerSelected?.invoke(value)
+            internalView.selectMarkerOnClick = value
+            setMarkerClick()
+        }
+
+    /**
+     * called on marker click
+     * @see SKMapVC.Marker.onMarkerClick
+     */
+    @Suppress("unused")
+    var onMarkerClicked: ((SKMapVC.Marker) -> Unit)? = onMarkerClickedInitial
+        set(value) {
+            field = value
+            setMarkerClick()
+        }
+
+    var unselectMarkerOnMapClick: Boolean
+        get() = internalView.unselectMarkerOnMapClick
+        set(value) {
+            internalView.unselectMarkerOnMapClick = value
+            setMapClick()
+        }
+
+    /**
+     * called on map click
+     */
+    @Suppress("unused")
+    var onMapClicked: ((LatLng) -> Unit)? = onMapClickedInitial
+        set(value) {
+            field = value
+            setMapClick()
         }
 
 
-    var items: List<SKMapVC.Marker>
+    var onMarkerSelected: ((SKMapVC.Marker?) -> Unit)?
+        get() = internalView.onMarkerSelected
+        set(value) {
+            internalView.onMarkerSelected = value
+        }
+
+    /**
+     * list of markers
+     */
+    @Suppress("unused")
+    var markers: List<SKMapVC.Marker>
         get() = view.markers
         set(value) {
             view.markers = value
         }
 
-    override val view: SKMapVC =
-        skmapViewInjector.sKMap(
-            itemsInitial = initialItems,
-            onMapClickedInitial = null,
-            selectedMarkerInitial = null,
-            onMarkerClick = {
-                it.onMarkerClick.invoke()
-                if (selectMarkerWhenClicked) {
-                    selectedMarker = it
-                }
-            }
-        )
-
-    init {
-        setOnMapClicked(onMapClickedInitial)
-    }
-
-
     /**
-     * set new function type which allow to obtain the map click position
-     * @param onMapClicked function type which allow to obtain the map click position
+     * current selected Marker, null if no marker selected
      */
     @Suppress("unused")
-    fun setOnMapClicked(onMapClicked: ((Pair<Double, Double>) -> Unit)?) {
-        view.onMapClicked = if (unselectMarkerWhenMapClicked) {
-            {
-                onMapClicked?.invoke(it)
-                selectedMarker = null
-            }
-        } else {
-            onMapClicked
+    var selectedMarker: SKMapVC.Marker?
+        get() = internalView.selectedMarker
+        set(value) {
+            internalView.selectedMarker = value
+            onMarkerSelected?.invoke(value)
+        }
+
+    /**
+     *  called each time [MapBounds][SKMapVC.MapBounds] change (when mapview is idle)
+     */
+    @Suppress("unused")
+    var onMapBoundsChange: ((SKMapVC.MapBounds) -> Unit)?
+        get() = view.onMapBoundsChange
+        set(value) {
+            view.onMapBoundsChange = value
+        }
+
+    private fun setMarkerClick() {
+        if (onMarkerClicked != null
+            || internalView.selectMarkerOnClick
+        ) {
+            internalView.onMarkerClicked = internalOnMarkerClicked
         }
     }
 
+    private fun setMapClick() {
+        if (onMapClicked != null
+            || internalView.unselectMarkerOnMapClick
+        ) {
+            internalView.onMapClicked = internalOnMapClicked
+        }
+    }
 
     /**
      * Show my location button
@@ -92,8 +162,12 @@ class SKMap(
         askForPermissionIfNeeded: Boolean = false,
         onPermissionError: (() -> Unit)? = null
     ) {
-        val hasCoarsePermission =permissions.coarseLocation?.let { declaredPermissionHelper.isPermissionDeclaredForApp(it)} ?: false
-        val hasFinePermission = permissions.fineLocation?.let { declaredPermissionHelper.isPermissionDeclaredForApp(it)}?: false
+        val hasCoarsePermission =
+            permissions.coarseLocation?.let { declaredPermissionHelper.isPermissionDeclaredForApp(it) }
+                ?: false
+        val hasFinePermission =
+            permissions.fineLocation?.let { declaredPermissionHelper.isPermissionDeclaredForApp(it) }
+                ?: false
         val myLocationPermission = mutableListOf<SKPermission>()
         permissions.coarseLocation?.let { myLocationPermission.add(it) }
         permissions.fineLocation?.let { myLocationPermission.add(it) }
@@ -135,10 +209,9 @@ class SKMap(
         }
     }
 
-
     /**
      * get current MapBounds
-     * @param onResult, called once with current [MapBounds][SKMapVC.MapBounds]
+     * @param onResult called once with current [MapBounds][SKMapVC.MapBounds]
      */
     @Suppress("unused")
     fun getMapBounds(onResult: (SKMapVC.MapBounds) -> Unit) {
@@ -146,21 +219,11 @@ class SKMap(
     }
 
     /**
-     * called on MapBoundsChange when mapview is idle
-     * @param onResult, called each time [MapBounds][SKMapVC.MapBounds] change
-     */
-    @Suppress("unused")
-    fun onMapBoundsChange(onResult: (SKMapVC.MapBounds) -> Unit) {
-        view.onMapBoundsChange(onResult)
-    }
-
-
-    /**
      * center map to show all markers currently added
      */
     @Suppress("unused")
     fun centerOnMarkers() {
-        centerOnPositions(items.toPositions())
+        centerOnPositions(markers.toPositions())
     }
 
     /**
@@ -177,22 +240,21 @@ class SKMap(
      * center map to show all positions
      */
     @Suppress("unused")
-    fun centerOnPositions(positions: List<Pair<Double, Double>>) {
+    fun centerOnPositions(positions: List<LatLng>) {
         view.centerOnPositions(positions)
     }
 
-
     /**
      *  function to call for moving camera on another location
-     *  @param pos a [Pair] of [Double] representing the requested location for the center of the map
+     *  @param pos a [Pair] of [LatLng] representing the requested location for the center of the map
      *  @param zoomLevel a [Float] representing the zoom level to use
      *  @param animate true if the position change must be animated, false otherwise
      */
     @Suppress("unused")
-    fun setCameraPosition(pos: Pair<Double, Double>, zoomLevel: Float, animate: Boolean = true) {
+    fun setCameraPosition(pos: LatLng, zoomLevel: Float, animate: Boolean = true) {
         view.setCameraPosition(pos, zoomLevel, animate)
     }
 
-    private fun List<SKMapVC.Marker>.toPositions(): List<Pair<Double, Double>> = map { it.position }
+    private fun List<SKMapVC.Marker>.toPositions(): List<LatLng> = map { it.position }
 
 }

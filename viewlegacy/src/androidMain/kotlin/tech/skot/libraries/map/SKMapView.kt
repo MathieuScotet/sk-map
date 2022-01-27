@@ -19,6 +19,7 @@ import com.google.android.gms.maps.model.*
 import tech.skot.core.SKLog
 import tech.skot.core.components.SKActivity
 import tech.skot.core.components.SKComponentView
+import com.google.android.gms.maps.model.LatLng as LatLngGMap
 
 
 class SKMapView(
@@ -28,6 +29,7 @@ class SKMapView(
     val mapView: MapView
 ) : SKComponentView<MapView>(proxy, activity, fragment, mapView), SKMapRAI {
 
+    private var onMarkerSelected: ((SKMapVC.Marker?) -> Unit)? = null
     private var lastSelectedMarker: Pair<SKMapVC.Marker, Marker>? = null
 
 
@@ -80,7 +82,7 @@ class SKMapView(
         mapView.getMapAsync {
 
             it.setOnMapClickListener {
-                proxy.onMapClicked?.invoke(Pair(it.latitude, it.longitude))
+                proxy.onMapClicked?.invoke(LatLng(it.latitude, it.longitude))
             }
 
 
@@ -89,7 +91,7 @@ class SKMapView(
                     marker == clickedMarker
                 }
                 item?.let {
-                    proxy.onMarkerClick.invoke(item.first)
+                    proxy.onMarkerClicked?.invoke(item.first)
                 }
                 true
             }
@@ -133,6 +135,7 @@ class SKMapView(
 
 
     override fun onSelectedMarker(selectedMarker: SKMapVC.Marker?) {
+        onMarkerSelected?.invoke(selectedMarker)
         mapView.getMapAsync {
             lastSelectedMarker?.let { current ->
                 getIcon(current.first, false)?.let {
@@ -154,20 +157,20 @@ class SKMapView(
             //first parts -> remove
             //second parts -> update
             val currentMarker = this.items.partition { currentItem ->
-                currentItem.first.itemId == null || items.any { currentItem.first.itemId == it.itemId }
+                currentItem.first.id == null || items.any { currentItem.first.id == it.id }
             }
 
             //first parts -> update
             //second parts -> add
             val newMarkers = items.partition { marker ->
-                marker.itemId != null && this.items.any {
-                    marker.itemId != null && marker.itemId == it.first.itemId
+                marker.id != null && this.items.any {
+                    marker.id != null && marker.id == it.first.id
                 }
             }
 
             //items to remove from map
             currentMarker.first.forEach { pair ->
-                if (pair.first.itemId == lastSelectedMarker?.first?.itemId) {
+                if (pair.first.id == lastSelectedMarker?.first?.id) {
                     lastSelectedMarker = null
                 }
                 pair.second.remove()
@@ -176,15 +179,15 @@ class SKMapView(
             //items to update on map
             val updatedMarker = currentMarker.second.mapNotNull { currentPair ->
                 newMarkers.first.find {
-                    it.itemId == currentPair.first.itemId
+                    it.id == currentPair.first.id
                 }?.let {
                     Pair(it, currentPair.second.apply {
-                        this.position = (LatLng(
+                        this.position = LatLngGMap(
                             it.position.first,
                             it.position.second
-                        ))
+                        )
 
-                        getIcon(it, lastSelectedMarker?.first?.itemId == it.itemId).let {
+                        getIcon(it, lastSelectedMarker?.first?.id == it.id).let {
                             this.setIcon(it)
                         }
                     })
@@ -196,7 +199,7 @@ class SKMapView(
                 val marker = map.addMarker(
                     MarkerOptions()
                         .position(
-                            LatLng(
+                            LatLngGMap(
                                 skMarker.position.first,
                                 skMarker.position.second
                             )
@@ -216,14 +219,49 @@ class SKMapView(
     }
 
 
+    override fun onOnMapClicked(onMapClicked: ((LatLng) -> Unit)?) {
+        mapView.getMapAsync {
+            if (onMapClicked != null) {
+                it.setOnMapClickListener {
+                    onMapClicked.invoke(it.latitude to it.longitude)
+                }
+            } else {
+                it.setOnMapClickListener(null)
+            }
+        }
+    }
+
+    override fun onOnMarkerClick(onMarkerClick: ((SKMapVC.Marker) -> Unit)?) {
+        mapView.getMapAsync {
+            if (onMarkerClick != null) {
+                it.setOnMarkerClickListener { clickedMarker ->
+                    val item = items.find { (_, marker) ->
+                        marker == clickedMarker
+                    }
+                    item?.let {
+                        onMarkerClick.invoke(item.first)
+                    }
+                    true
+                }
+            } else {
+                it.setOnMapClickListener(null)
+            }
+        }
+    }
+
+    override fun onOnMarkerSelected(onMarkerSelected: ((SKMapVC.Marker?) -> Unit)?) {
+        this.onMarkerSelected = onMarkerSelected
+    }
+
+
     override fun setCameraPosition(
-        position: Pair<Double, Double>,
+        position: LatLng,
         zoomLevel: Float,
         animate: Boolean
     ) {
         val cameraUpdate =
             CameraUpdateFactory.newLatLngZoom(
-                LatLng(position.first, position.second),
+                com.google.android.gms.maps.model.LatLng(position.first, position.second),
                 zoomLevel
             )
         mapView.getMapAsync {
@@ -235,11 +273,11 @@ class SKMapView(
         }
     }
 
-    override fun centerOnPositions(positions: List<Pair<Double, Double>>) {
+    override fun centerOnPositions(positions: List<LatLng>) {
         if (positions.isNotEmpty()) {
             val latLngBoundsBuilder = LatLngBounds.builder()
             positions.forEach {
-                latLngBoundsBuilder.include(LatLng(it.first, it.second))
+                latLngBoundsBuilder.include(LatLngGMap(it.first, it.second))
             }
             val latLngBound = CameraUpdateFactory.newLatLngBounds(
                 latLngBoundsBuilder.build(),
@@ -265,14 +303,14 @@ class SKMapView(
         }
     }
 
-    override fun onMapBoundsChange(onResult: ((SKMapVC.MapBounds) -> Unit)?) {
+    override fun onOnMapBoundsChange(onMapBoundsChange: ((SKMapVC.MapBounds) -> Unit)?) {
         mapView.getMapAsync {
-            if (onResult == null) {
+            if (onMapBoundsChange == null) {
                 it.setOnCameraIdleListener(null)
             } else {
                 it.setOnCameraIdleListener {
                     it.projection.visibleRegion.latLngBounds.let {
-                        onResult(
+                        onMapBoundsChange(
                             SKMapVC.MapBounds(
                                 it.northeast.latitude to it.northeast.longitude,
                                 it.southwest.latitude to it.southwest.longitude

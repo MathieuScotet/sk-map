@@ -2,26 +2,35 @@ package tech.skot.libraries.map.di
 
 import tech.skot.core.di.InjectorMock
 import tech.skot.core.di.module
+import tech.skot.libraries.map.LatLng
 import tech.skot.libraries.map.SKMapVC
 import tech.skot.libraries.map.SKMapViewMock
-import tech.skot.libraries.map.view.Permissions
 
 class SKMapViewInjectorMock : SKMapViewInjector {
     override fun sKMap(
-        onMarkerClick: (SKMapVC.Marker) -> Unit,
-        itemsInitial: List<SKMapVC.Marker>,
-        onMapClickedInitial: ((Pair<Double, Double>) -> Unit)?,
-        selectedMarkerInitial: SKMapVC.Marker?
+        markersInitial: List<SKMapVC.Marker>,
+        selectedMarkerInitial: SKMapVC.Marker?,
+        selectMarkerOnClickInitial: Boolean,
+        unselectMarkerOnMapClickInitial: Boolean,
+        onMarkerClickInitial: ((SKMapVC.Marker) -> Unit)?,
+        onMarkerSelectedInitial: ((SKMapVC.Marker?) -> Unit)?,
+        onMapClickedInitial: ((LatLng) -> Unit)?,
+        onMapBoundsChangeInitial: ((SKMapVC.MapBounds) -> Unit)?
     ): SKMapVC {
         return SKMapViewMock(
-            onMarkerClick,
-            itemsInitial,
+            markersInitial,
+            selectedMarkerInitial,
+            selectMarkerOnClickInitial,
+            unselectMarkerOnMapClickInitial,
+            onMarkerClickInitial,
             onMapClickedInitial,
-            selectedMarkerInitial
+            onMarkerSelectedInitial,
+            onMapBoundsChangeInitial
         )
     }
 
 }
+
 var skMapModuleMock = module<InjectorMock> {
     single<SKMapViewInjector> { SKMapViewInjectorMock() }
 }

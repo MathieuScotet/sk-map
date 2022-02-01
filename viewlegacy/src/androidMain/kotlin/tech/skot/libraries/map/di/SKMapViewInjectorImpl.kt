@@ -8,6 +8,7 @@ import tech.skot.libraries.map.view.PermissionsImpl
 
 class SKMapViewInjectorImpl : SKMapViewInjector {
     override fun sKMap(
+        mapInteractionSettingsInitial : SKMapVC.MapInteractionSettings,
         markersInitial: List<SKMapVC.Marker>,
         selectedMarkerInitial: SKMapVC.Marker?,
         selectMarkerOnClickInitial: Boolean,
@@ -18,6 +19,7 @@ class SKMapViewInjectorImpl : SKMapViewInjector {
         onMapBoundsChangeInitial: Function1<SKMapVC.MapBounds, Unit>?,
     ): SKMapVC =
         SKMapViewProxy(
+            mapInteractionSettingsInitial,
             markersInitial,
             selectedMarkerInitial,
             selectMarkerOnClickInitial,

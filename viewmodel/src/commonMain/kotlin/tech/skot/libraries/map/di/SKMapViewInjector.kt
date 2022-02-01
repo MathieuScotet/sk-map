@@ -6,6 +6,7 @@ import tech.skot.libraries.map.SKMapVC
 
 interface SKMapViewInjector {
     fun sKMap(
+        mapInteractionSettingsInitial: SKMapVC.MapInteractionSettings,
         markersInitial: List<SKMapVC.Marker>,
         selectedMarkerInitial: SKMapVC.Marker?,
         selectMarkerOnClickInitial: Boolean,

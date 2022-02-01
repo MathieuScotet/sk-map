@@ -25,6 +25,7 @@ import tech.skot.libraries.map.view.Permissions
  */
 @Suppress("unused")
 class SKMap(
+    mapInteractionSettingsInitial:  SKMapVC.MapInteractionSettings = SKMapVC.MapNormalInteractionSettings,
     markersInitial: List<SKMapVC.Marker>,
     selectedMarkerInitial: SKMapVC.Marker? = null,
     selectMarkerOnClickInitial: Boolean = true,
@@ -37,17 +38,7 @@ class SKMap(
 
     private val declaredPermissionHelper: DeclaredPermissionHelper = get()
     private val permissions: Permissions = get()
-    override val view: SKMapVC = skmapViewInjector.sKMap(
-        markersInitial = markersInitial,
-        selectedMarkerInitial = selectedMarkerInitial,
-        selectMarkerOnClickInitial = selectMarkerOnClickInitial,
-        unselectMarkerOnMapClickInitial = unselectMarkerOnMapClickInitial,
-        onMarkerClickInitial = null,
-        onMapClickedInitial = onMapClickedInitial,
-        onMarkerSelectedInitial = onMarkerSelectedInitial,
-        onMapBoundsChangeInitial = onMapBoundsChangeInitial,
-    )
-    private val internalView = view as InternalSKMapVC
+
     private val internalOnMapClicked: (LatLng) -> Unit = {
         onMapClicked?.invoke(it)
         if (internalView.unselectMarkerOnMapClick) {
@@ -61,11 +52,32 @@ class SKMap(
             selectedMarker = it
         }
     }
+
+
+
+    override val view: SKMapVC = skmapViewInjector.sKMap(
+        mapInteractionSettingsInitial = mapInteractionSettingsInitial,
+        markersInitial = markersInitial,
+        selectedMarkerInitial = selectedMarkerInitial,
+        selectMarkerOnClickInitial = selectMarkerOnClickInitial,
+        unselectMarkerOnMapClickInitial = unselectMarkerOnMapClickInitial,
+        onMarkerClickInitial = internalOnMarkerClicked,
+        onMapClickedInitial = internalOnMapClicked,
+        onMarkerSelectedInitial = onMarkerSelectedInitial,
+        onMapBoundsChangeInitial = onMapBoundsChangeInitial,
+    )
+    private val internalView = view as InternalSKMapVC
+
+    var mapInteractionSettings: SKMapVC.MapInteractionSettings
+        get() = internalView.mapInteractionSettings
+        set(value) {
+            internalView.mapInteractionSettings = value
+        }
+
     var selectMarkerOnClick: Boolean
         get() = internalView.selectMarkerOnClick
         set(value) {
             internalView.selectMarkerOnClick = value
-            setMarkerClick()
         }
 
     /**
@@ -74,16 +86,12 @@ class SKMap(
      */
     @Suppress("unused")
     var onMarkerClicked: ((SKMapVC.Marker) -> Unit)? = onMarkerClickedInitial
-        set(value) {
-            field = value
-            setMarkerClick()
-        }
+
 
     var unselectMarkerOnMapClick: Boolean
         get() = internalView.unselectMarkerOnMapClick
         set(value) {
             internalView.unselectMarkerOnMapClick = value
-            setMapClick()
         }
 
     /**
@@ -91,10 +99,6 @@ class SKMap(
      */
     @Suppress("unused")
     var onMapClicked: ((LatLng) -> Unit)? = onMapClickedInitial
-        set(value) {
-            field = value
-            setMapClick()
-        }
 
 
     var onMarkerSelected: ((SKMapVC.Marker?) -> Unit)?
@@ -133,22 +137,22 @@ class SKMap(
         set(value) {
             view.onMapBoundsChange = value
         }
-
-    private fun setMarkerClick() {
-        if (onMarkerClicked != null
-            || internalView.selectMarkerOnClick
-        ) {
-            internalView.onMarkerClicked = internalOnMarkerClicked
-        }
-    }
-
-    private fun setMapClick() {
-        if (onMapClicked != null
-            || internalView.unselectMarkerOnMapClick
-        ) {
-            internalView.onMapClicked = internalOnMapClicked
-        }
-    }
+//
+//    private fun setMarkerClick() {
+//        if (onMarkerClicked != null
+//            || internalView.selectMarkerOnClick
+//        ) {
+//            internalView.onMarkerClicked = internalOnMarkerClicked
+//        }
+//    }
+//
+//    private fun setMapClick() {
+//        if (onMapClicked != null
+//            || internalView.unselectMarkerOnMapClick
+//        ) {
+//            internalView.onMapClicked = internalOnMapClicked
+//        }
+//    }
 
     /**
      * Show my location button

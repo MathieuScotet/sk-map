@@ -5,17 +5,13 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffColorFilter
-import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.MapView
-import com.google.android.gms.maps.model.*
+import com.google.android.gms.maps.model.LatLngBounds
 import tech.skot.core.SKLog
 import tech.skot.core.components.SKActivity
 import tech.skot.core.components.SKComponentView
@@ -29,18 +25,17 @@ class SKMapView(
     val mapView: MapView
 ) : SKComponentView<MapView>(proxy, activity, fragment, mapView), SKMapRAI {
 
-    private var onMarkerSelected: ((SKMapVC.Marker?) -> Unit)? = null
-    private var lastSelectedMarker: Pair<SKMapVC.Marker, Marker>? = null
-
-
-    private var items: List<Pair<SKMapVC.Marker, Marker>> = emptyList()
+    private var mapInteractionHelper: MapInteractionHelper
 
 
     /**
      * use it to create BitmapDescriptor in case of  [CustomMarker][SKMapVC.CustomMarker] use
      */
-    var onCreateCustomMarkerIcon: ((SKMapVC.CustomMarker, selected: Boolean) -> BitmapDescriptor)? =
-        null
+    var onCreateCustomMarkerIcon: ((SKMapVC.CustomMarker, selected: Boolean) -> Bitmap)? = null
+    set(value) {
+        field = value
+        mapInteractionHelper.onCreateCustomMarkerIcon = value
+    }
 
 
     init {
@@ -76,146 +71,30 @@ class SKMapView(
             }
         })
 
-
-
-
-        mapView.getMapAsync {
-
-            it.setOnMapClickListener {
-                proxy.onMapClicked?.invoke(LatLng(it.latitude, it.longitude))
+        mapInteractionHelper = when (val settings = proxy.mapInteractionSettings) {
+            is SKMapVC.MapClusteringInteractionSettings -> {
+                GMapClusteringInteractionHelper(activity, mapView)
             }
-
-
-            it.setOnMarkerClickListener { clickedMarker ->
-                val item = items.find { (_, marker) ->
-                    marker == clickedMarker
-                }
-                item?.let {
-                    proxy.onMarkerClicked?.invoke(item.first)
-                }
-                true
+            is SKMapVC.MapNormalInteractionSettings -> {
+                GMapInteractionHelper(activity,mapView)
             }
-
+            is SKMapVC.MapCustomInteractionSettings -> {
+                mapRefCustomInteractionHelper[settings.customRef]?.invoke(activity,mapView,settings.data) ?: throw NotImplementedError("With MapCustomInteractionSettings you must provide a CustomInteractionHelper with ref ${settings.customRef} in mapRefCustomInteractionHelper ")
+            }
+        }.apply {
+            this.onCreateCustomMarkerIcon = this@SKMapView.onCreateCustomMarkerIcon
         }
     }
 
-    /**
-     * Helper method to obtain BitmapDescriptor from resource.
-     * Add compatibility with vector resources
-     */
-    private fun getBitmapDescriptor(context: Context, resId: Int, color: Int?): BitmapDescriptor? {
-        val drawable: Drawable? = ContextCompat.getDrawable(context, resId)
-            ?.let { if (color != null) it.mutate() else it }
-        return drawable?.let {
-            drawable.setBounds(
-                0,
-                0,
-                drawable.intrinsicWidth,
-                drawable.intrinsicHeight
-            )
 
-            color?.let {
-                drawable.colorFilter = PorterDuffColorFilter(
-                    ContextCompat.getColor(context, color),
-                    PorterDuff.Mode.MULTIPLY
-                )
-            }
-            val bitmap: Bitmap = Bitmap.createBitmap(
-                drawable.intrinsicWidth,
-                drawable.intrinsicHeight,
-                Bitmap.Config.ARGB_8888
-            )
-
-            val canvas = Canvas(bitmap)
-            drawable.draw(canvas)
-
-            BitmapDescriptorFactory.fromBitmap(bitmap)
-        }
-    }
 
 
     override fun onSelectedMarker(selectedMarker: SKMapVC.Marker?) {
-        onMarkerSelected?.invoke(selectedMarker)
-        mapView.getMapAsync {
-            lastSelectedMarker?.let { current ->
-                getIcon(current.first, false)?.let {
-                    current.second.setIcon(it)
-                }
-            }
-            lastSelectedMarker = items.find {
-                it.first == selectedMarker
-            }?.also { newSelectedMarker ->
-                getIcon(newSelectedMarker.first, true).let {
-                    newSelectedMarker.second.setIcon(it)
-                }
-            }
-        }
+        mapInteractionHelper.onSelectedMarker(selectedMarker)
     }
 
     override fun onItems(items: List<SKMapVC.Marker>) {
-        mapView.getMapAsync { map ->
-            //first parts -> remove
-            //second parts -> update
-            val currentMarker = this.items.partition { currentItem ->
-                currentItem.first.id == null || items.any { currentItem.first.id == it.id }
-            }
-
-            //first parts -> update
-            //second parts -> add
-            val newMarkers = items.partition { marker ->
-                marker.id != null && this.items.any {
-                    marker.id != null && marker.id == it.first.id
-                }
-            }
-
-            //items to remove from map
-            currentMarker.first.forEach { pair ->
-                if (pair.first.id == lastSelectedMarker?.first?.id) {
-                    lastSelectedMarker = null
-                }
-                pair.second.remove()
-            }
-
-            //items to update on map
-            val updatedMarker = currentMarker.second.mapNotNull { currentPair ->
-                newMarkers.first.find {
-                    it.id == currentPair.first.id
-                }?.let {
-                    Pair(it, currentPair.second.apply {
-                        this.position = LatLngGMap(
-                            it.position.first,
-                            it.position.second
-                        )
-
-                        getIcon(it, lastSelectedMarker?.first?.id == it.id).let {
-                            this.setIcon(it)
-                        }
-                    })
-                }
-            }
-
-            //items to add to map
-            val addedMarker = newMarkers.second.mapNotNull { skMarker ->
-                val marker = map.addMarker(
-                    MarkerOptions()
-                        .position(
-                            LatLngGMap(
-                                skMarker.position.first,
-                                skMarker.position.second
-                            )
-                        ).apply {
-                            getIcon(skMarker, false).let {
-                                this.icon(it)
-                            }
-                        }
-                )
-                marker?.let {
-                    Pair(skMarker, marker)
-                }
-            }
-
-            this.items = updatedMarker + addedMarker
-        }
+        mapInteractionHelper.addMarkers(markers = items)
     }
 
 
@@ -231,26 +110,52 @@ class SKMapView(
         }
     }
 
+
     override fun onOnMarkerClick(onMarkerClick: ((SKMapVC.Marker) -> Unit)?) {
-        mapView.getMapAsync {
-            if (onMarkerClick != null) {
-                it.setOnMarkerClickListener { clickedMarker ->
-                    val item = items.find { (_, marker) ->
-                        marker == clickedMarker
-                    }
-                    item?.let {
-                        onMarkerClick.invoke(item.first)
-                    }
-                    true
-                }
-            } else {
-                it.setOnMapClickListener(null)
-            }
-        }
+        mapInteractionHelper.onMarkerClick = onMarkerClick
     }
 
     override fun onOnMarkerSelected(onMarkerSelected: ((SKMapVC.Marker?) -> Unit)?) {
-        this.onMarkerSelected = onMarkerSelected
+        mapInteractionHelper.onMarkerSelected = onMarkerSelected
+    }
+
+
+
+    override fun onMapInteractionSettings(mapInteractionSettings: SKMapVC.MapInteractionSettings) {
+        mapView.getMapAsync { googleMap ->
+            googleMap.clear()
+            mapInteractionHelper = when (mapInteractionSettings) {
+                is SKMapVC.MapClusteringInteractionSettings -> {
+                    GMapClusteringInteractionHelper(
+                        context = activity,
+                        mapView = mapView,
+                        onClusterClick = mapInteractionSettings.onClusterClick
+                    )
+                }
+                is SKMapVC.MapNormalInteractionSettings -> {
+                    GMapInteractionHelper(activity, mapView)
+                }
+                is SKMapVC.MapCustomInteractionSettings -> {
+                    mapRefCustomInteractionHelper[mapInteractionSettings.customRef]?.invoke(
+                        activity,
+                        mapView,
+                        mapInteractionSettings.data
+                    ) ?: throw NotImplementedError("With MapCustomInteractionSettings you must provide a CustomInteractionHelper with ref ${mapInteractionSettings.customRef} in mapRefCustomInteractionHelper ")
+                }
+            }.apply {
+                this.onCreateCustomMarkerIcon = this@SKMapView.onCreateCustomMarkerIcon
+                onItems(proxy.markers)
+                this.onOnMapBoundsChange(proxy.onMapBoundsChange)
+                this.onMarkerClick = proxy.onMarkerClicked
+                this.onMarkerSelected = proxy.onMarkerSelected
+                this.onSelectedMarker(proxy.selectedMarker)
+            }
+
+
+
+
+        }
+
     }
 
 
@@ -259,12 +164,12 @@ class SKMapView(
         zoomLevel: Float,
         animate: Boolean
     ) {
-        val cameraUpdate =
-            CameraUpdateFactory.newLatLngZoom(
-                com.google.android.gms.maps.model.LatLng(position.first, position.second),
-                zoomLevel
-            )
         mapView.getMapAsync {
+            val cameraUpdate =
+                CameraUpdateFactory.newLatLngZoom(
+                    com.google.android.gms.maps.model.LatLng(position.first, position.second),
+                    zoomLevel
+                )
             if (animate) {
                 it.animateCamera(cameraUpdate)
             } else {
@@ -279,11 +184,11 @@ class SKMapView(
             positions.forEach {
                 latLngBoundsBuilder.include(LatLngGMap(it.first, it.second))
             }
-            val latLngBound = CameraUpdateFactory.newLatLngBounds(
-                latLngBoundsBuilder.build(),
-                (16 * Resources.getSystem().displayMetrics.density).toInt()
-            )
             mapView.getMapAsync {
+                val latLngBound = CameraUpdateFactory.newLatLngBounds(
+                    latLngBoundsBuilder.build(),
+                    (16 * Resources.getSystem().displayMetrics.density).toInt()
+                )
                 it.animateCamera(latLngBound)
             }
         }
@@ -304,22 +209,7 @@ class SKMapView(
     }
 
     override fun onOnMapBoundsChange(onMapBoundsChange: ((SKMapVC.MapBounds) -> Unit)?) {
-        mapView.getMapAsync {
-            if (onMapBoundsChange == null) {
-                it.setOnCameraIdleListener(null)
-            } else {
-                it.setOnCameraIdleListener {
-                    it.projection.visibleRegion.latLngBounds.let {
-                        onMapBoundsChange(
-                            SKMapVC.MapBounds(
-                                it.northeast.latitude to it.northeast.longitude,
-                                it.southwest.latitude to it.southwest.longitude
-                            )
-                        )
-                    }
-                }
-            }
-        }
+        mapInteractionHelper.onOnMapBoundsChange(onMapBoundsChange)
     }
 
 
@@ -361,27 +251,8 @@ class SKMapView(
     }
 
 
-    private fun getIcon(marker: SKMapVC.Marker, selected: Boolean): BitmapDescriptor? {
-        return when (marker) {
-            is SKMapVC.IconMarker -> {
-                if (selected) {
-                    getBitmapDescriptor(context, marker.selectedIcon.res, null)
-                } else {
-                    getBitmapDescriptor(context, marker.normalIcon.res, null)
-                }
-            }
-            is SKMapVC.ColorizedIconMarker -> {
-                if (selected) {
-                    getBitmapDescriptor(context, marker.icon.res, marker.selectedColor.res)
-                } else {
-                    getBitmapDescriptor(context, marker.icon.res, marker.normalColor.res)
-                }
-            }
-            is SKMapVC.CustomMarker -> {
-                onCreateCustomMarkerIcon?.invoke(marker, selected)
-                    ?: throw NoSuchFieldException("onCreateCustomMarkerIcon must not be null with CustomMarker")
-            }
-        }
+    companion object {
+            val mapRefCustomInteractionHelper : MutableMap<Int,(context : Context, mapView: MapView, data : Any?)-> MapInteractionHelper> = mutableMapOf()
     }
 
 

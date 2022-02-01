@@ -3,6 +3,7 @@ package tech.skot.libraries.map
 import tech.skot.core.components.SKComponentViewMock
 
 class SKMapViewMock(
+    mapInteractionSettingsInitial: SKMapVC.MapInteractionSettings,
     itemsInitial: List<SKMapVC.Marker>,
     selectedMarkerInitial: SKMapVC.Marker?,
     selectMarkerOnClickInitial : Boolean,
@@ -20,6 +21,7 @@ class SKMapViewMock(
     override var selectMarkerOnClick: Boolean = selectMarkerOnClickInitial
     override var unselectMarkerOnMapClick: Boolean = unselectMarkerOnMapClickInitial
     override var onMapBoundsChange: ((SKMapVC.MapBounds) -> Unit)? = onMapBoundChangeInitial
+    override var mapInteractionSettings: SKMapVC.MapInteractionSettings = mapInteractionSettingsInitial
 
     override fun setCameraPosition(
         position: Pair<Double, Double>,

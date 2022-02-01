@@ -20,6 +20,7 @@ import tech.skot.libraries.map.SKMapVC.Marker
 interface SKMapVC : SKComponentVC {
     var markers: List<Marker>
     var onMapBoundsChange: ((SKMapVC.MapBounds) -> Unit)?
+    var mapInteractionSettings: MapInteractionSettings
 
 
     /**
@@ -139,7 +140,10 @@ interface SKMapVC : SKComponentVC {
         val southwest: LatLng,
     )
 
-
+    sealed class MapInteractionSettings
+    object MapNormalInteractionSettings: MapInteractionSettings()
+    class MapClusteringInteractionSettings( val onClusterClick: ((markers: List<Marker>) -> Unit)?): MapInteractionSettings()
+    class MapCustomInteractionSettings(val customRef : Int, val data : Any?): MapInteractionSettings()
 }
 
 interface InternalSKMapVC : SKMapVC {

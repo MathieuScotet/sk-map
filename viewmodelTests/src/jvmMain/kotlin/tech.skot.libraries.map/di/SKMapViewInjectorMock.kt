@@ -2,9 +2,8 @@ package tech.skot.libraries.map.di
 
 import tech.skot.core.di.InjectorMock
 import tech.skot.core.di.module
-import tech.skot.libraries.map.LatLng
-import tech.skot.libraries.map.SKMapVC
-import tech.skot.libraries.map.SKMapViewMock
+import tech.skot.libraries.map.*
+import tech.skot.libraries.map.view.Permissions
 
 class SKMapViewInjectorMock : SKMapViewInjector {
     override fun sKMap(
@@ -33,4 +32,7 @@ class SKMapViewInjectorMock : SKMapViewInjector {
 
 var skMapModuleMock = module<InjectorMock> {
     single<SKMapViewInjector> { SKMapViewInjectorMock() }
+    single<Permissions> { PermissionsMock() }
+    single<DeclaredPermissionHelper> { DeclaredPermissionHelperMock()}
+
 }

@@ -6,21 +6,27 @@ import android.graphics.Canvas
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.Drawable
+import androidx.collection.LruCache
 import androidx.core.content.ContextCompat
 import com.google.android.gms.maps.MapView
+import com.google.android.gms.maps.model.BitmapDescriptor
 
 abstract class MapInteractionHelper(
     val context: Context,
-    val mapView: MapView) {
+    val mapView: MapView,
+    val memoryCache: LruCache<String, SKMapView.BitmapDescriptorContainer>
+) {
 
     abstract fun onSelectedMarker(selectedMarker: SKMapVC.Marker?)
-//    val getIcon : (SKMapVC.Marker, selected : Boolean) -> Bitmap?
-//    val getClusterIcon : ((List<SKMapVC.Marker>) -> Bitmap?)?
     abstract var onMarkerSelected: ((SKMapVC.Marker?) -> Unit)?
     abstract fun addMarkers(markers: List<SKMapVC.Marker>)
-    abstract fun onOnMapBoundsChange(onMapBoundsChange: ((SKMapVC.MapBounds) -> Unit)?)
+    abstract fun onOnMapBoundsChange(onMapBoundsChange: ((SKMapVC.LatLngBounds) -> Unit)?)
     abstract var onMarkerClick: ((SKMapVC.Marker) -> Unit)?
-    abstract var onCreateCustomMarkerIcon : ((SKMapVC.CustomMarker, selected : Boolean) -> Bitmap?)?
+    var onCreateCustomMarkerIcon: ((SKMapVC.CustomMarker, selected: Boolean) -> Bitmap?)? = null
+
+
+
+
 
 
     /**
@@ -57,25 +63,58 @@ abstract class MapInteractionHelper(
     }
 
 
-    fun getIcon(marker: SKMapVC.Marker, selected: Boolean): Bitmap? {
+    fun getIcon(marker: SKMapVC.Marker, selected: Boolean): BitmapDescriptor? {
+        val hash = marker.iconHash(selected)
         return when (marker) {
             is SKMapVC.IconMarker -> {
-                if (selected) {
-                    getBitmap(context, marker.selectedIcon.res, null)
-                } else {
-                    getBitmap(context, marker.normalIcon.res, null)
+                memoryCache.get(hash)?.bitmapDescriptor ?: kotlin.run {
+                    if (selected) {
+                        getBitmap(context, marker.selectedIcon.res, null)?.let {
+                            SKMapView.BitmapDescriptorContainer(it).let {
+                                memoryCache.put(hash, it)
+                                it.bitmapDescriptor
+                            }
+                        }
+                    } else {
+                        getBitmap(context, marker.normalIcon.res, null)?.let {
+                            SKMapView.BitmapDescriptorContainer(it).let {
+                                memoryCache.put(hash, it)
+                                it.bitmapDescriptor
+                            }
+                        }
+                    }
                 }
+
             }
             is SKMapVC.ColorizedIconMarker -> {
-                if (selected) {
-                    getBitmap(context, marker.icon.res, marker.selectedColor.res)
-                } else {
-                    getBitmap(context, marker.icon.res, marker.normalColor.res)
+                memoryCache.get(hash)?.bitmapDescriptor ?: kotlin.run {
+                    if (selected) {
+                        getBitmap(context, marker.icon.res, marker.selectedColor.res)?.let {
+                            SKMapView.BitmapDescriptorContainer(it).let {
+                                memoryCache.put(hash, it)
+                                it.bitmapDescriptor
+                            }
+                        }
+                    } else {
+                        getBitmap(context, marker.icon.res, marker.normalColor.res)?.let {
+                            SKMapView.BitmapDescriptorContainer(it).let {
+                                memoryCache.put(hash, it)
+                                it.bitmapDescriptor
+                            }
+                        }
+                    }
                 }
             }
             is SKMapVC.CustomMarker -> {
-                onCreateCustomMarkerIcon?.invoke(marker, selected)
-                    ?: throw NoSuchFieldException("onCreateCustomMarkerIcon must not be null with CustomMarker")
+                memoryCache.get(hash)?.bitmapDescriptor ?: kotlin.run {
+                    onCreateCustomMarkerIcon?.invoke(marker, selected)?.let {
+                        SKMapView.BitmapDescriptorContainer(it).let {
+                            memoryCache.put(hash, it)
+                            it.bitmapDescriptor
+                        }
+                    }
+                        ?: throw NoSuchFieldException("onCreateCustomMarkerIcon must not be null with CustomMarker")
+                }
             }
         }
     }

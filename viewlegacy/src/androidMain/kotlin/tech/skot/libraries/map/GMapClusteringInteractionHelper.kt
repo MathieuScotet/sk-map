@@ -2,6 +2,7 @@ package tech.skot.libraries.map
 
 import android.content.Context
 import android.graphics.Bitmap
+import androidx.collection.LruCache
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -19,16 +20,17 @@ import tech.skot.core.SKLog
 class GMapClusteringInteractionHelper(
     context: Context,
     mapView: MapView,
+    memoryCache: LruCache<String, SKMapView.BitmapDescriptorContainer>,
     var onClusterClick: ((List<SKMapVC.Marker>) -> Unit)? = null,
-) : MapInteractionHelper(context, mapView) {
+) : MapInteractionHelper(context, mapView, memoryCache) {
     private var _clusterManager: ClusterManager<SKClusterMarker>? = null
-    private var onMapBoundsChange: ((SKMapVC.MapBounds) -> Unit)? = null
+    private var onMapBoundsChange: ((MapBounds) -> Unit)? = null
     private var lastSelectedMarker: SKClusterMarker? = null
     override var onMarkerSelected: ((SKMapVC.Marker?) -> Unit)? = null
     override var onMarkerClick: ((SKMapVC.Marker) -> Unit)? = null
     private var mutext = Mutex()
     var getClusterIcon: ((List<SKMapVC.Marker>) -> Bitmap?)? = null
-    override var onCreateCustomMarkerIcon : ((SKMapVC.CustomMarker, selected : Boolean) -> Bitmap?)? = null
+
 
 
     private var items: List<SKClusterMarker> = emptyList()
@@ -55,7 +57,7 @@ class GMapClusteringInteractionHelper(
                             markerOptions: MarkerOptions
                         ) {
                             getIcon(item.marker, item.selected)?.let {
-                                markerOptions.icon(BitmapDescriptorFactory.fromBitmap(it))
+                                markerOptions.icon(it)
                             }
                             super.onBeforeClusterItemRendered(item, markerOptions)
                         }
@@ -63,7 +65,7 @@ class GMapClusteringInteractionHelper(
                         override fun onClusterItemUpdated(item: SKClusterMarker, marker: Marker) {
                             super.onClusterItemUpdated(item, marker)
                             getIcon(item.marker, item.selected)?.let {
-                                marker.setIcon(BitmapDescriptorFactory.fromBitmap(it))
+                                marker.setIcon(it)
                             }
                         }
 
@@ -130,7 +132,7 @@ class GMapClusteringInteractionHelper(
         }
     }
 
-    override fun onOnMapBoundsChange(onMapBoundsChange: ((SKMapVC.MapBounds) -> Unit)?) {
+    override fun onOnMapBoundsChange(onMapBoundsChange: ((SKMapVC.LatLngBounds) -> Unit)?) {
         this.onMapBoundsChange = onMapBoundsChange
     }
 
@@ -145,9 +147,9 @@ class GMapClusteringInteractionHelper(
         }
     }
 
-    protected fun getMapBounds(projection: Projection): SKMapVC.MapBounds {
+    protected fun getMapBounds(projection: Projection): SKMapVC.LatLngBounds {
         return projection.visibleRegion.latLngBounds.let {
-            SKMapVC.MapBounds(
+            SKMapVC.LatLngBounds(
                 it.northeast.latitude to it.northeast.longitude,
                 it.southwest.latitude to it.southwest.longitude
             )

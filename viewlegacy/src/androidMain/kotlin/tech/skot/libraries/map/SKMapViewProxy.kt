@@ -17,7 +17,7 @@ class SKMapViewProxy(
     onMarkerClickInitial: Function1<SKMapVC.Marker, Unit>?,
     onMarkerSelectedInitial: Function1<SKMapVC.Marker?, Unit>?,
     onMapClickedInitial: Function1<LatLng, Unit>?,
-    onMapBoundsChangeInitial: Function1<SKMapVC.MapBounds, Unit>?
+    onMapBoundsChangeInitial: Function1<SKMapVC.LatLngBounds, Unit>?
 ) : SKComponentViewProxy<MapView>(), InternalSKMapVC {
 
     private val mapInteractionSettingsLD: MutableSKLiveData<SKMapVC.MapInteractionSettings> = MutableSKLiveData(mapInteractionSettingsInitial)
@@ -36,9 +36,9 @@ class SKMapViewProxy(
     override var onMarkerClicked: Function1<SKMapVC.Marker, Unit>? by onMarkerClickLD
 
 
-    private val onMapBoundsChangeLD: MutableSKLiveData<Function1<SKMapVC.MapBounds, Unit>?> =
+    private val onMapBoundsChangeLD: MutableSKLiveData<Function1<SKMapVC.LatLngBounds, Unit>?> =
         MutableSKLiveData(onMapBoundsChangeInitial)
-    override var onMapBoundsChange: Function1<SKMapVC.MapBounds, Unit>? by onMapBoundsChangeLD
+    override var onMapBoundsChange: Function1<SKMapVC.LatLngBounds, Unit>? by onMapBoundsChangeLD
 
     private val selectMarkerOnClickLD: MutableSKLiveData<Boolean> =
         MutableSKLiveData(selectMarkerOnClickInitial)
@@ -75,7 +75,7 @@ class SKMapViewProxy(
         )
     }
 
-    override fun getMapBounds(onResult: (SKMapVC.MapBounds) -> Unit) {
+    override fun getMapBounds(onResult: (SKMapVC.LatLngBounds) -> Unit) {
         getMapBoundsMessage.post(GetMapBoundsData(onResult))
     }
 
@@ -172,7 +172,7 @@ class SKMapViewProxy(
     data class CenterOnPositionsData(val positions: List<LatLng>)
 
     data class GetMapBoundsData(
-        val onResult: (SKMapVC.MapBounds) -> Unit
+        val onResult: (SKMapVC.LatLngBounds) -> Unit
     )
 
 }
@@ -198,11 +198,11 @@ interface SKMapRAI {
     )
 
     fun getMapBounds(
-        onResult: (SKMapVC.MapBounds) -> Unit
+        onResult: (SKMapVC.LatLngBounds) -> Unit
     )
 
     fun onOnMapBoundsChange(
-        onMapBoundsChange: ((SKMapVC.MapBounds) -> Unit)?
+        onMapBoundsChange: ((SKMapVC.LatLngBounds) -> Unit)?
     )
 
     fun onOnMapClicked(

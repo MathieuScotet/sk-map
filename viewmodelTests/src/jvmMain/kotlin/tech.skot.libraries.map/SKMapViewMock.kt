@@ -11,7 +11,7 @@ class SKMapViewMock(
     onMarkerClickedInitial: ((SKMapVC.Marker) -> Unit)?,
     onMapClickedInitial: ((Pair<Double, Double>) -> Unit)?,
     onMarkerSelectedInitial: ((SKMapVC.Marker?) -> Unit)?,
-    onMapBoundChangeInitial: ((SKMapVC.MapBounds) -> Unit)?,
+    onMapBoundChangeInitial: ((SKMapVC.LatLngBounds) -> Unit)?,
 ) : SKComponentViewMock(), InternalSKMapVC {
     override var markers: List<SKMapVC.Marker> = itemsInitial
     override var onMapClicked: ((Pair<Double, Double>) -> Unit)? = onMapClickedInitial
@@ -20,7 +20,7 @@ class SKMapViewMock(
     override var selectedMarker: SKMapVC.Marker? = selectedMarkerInitial
     override var selectMarkerOnClick: Boolean = selectMarkerOnClickInitial
     override var unselectMarkerOnMapClick: Boolean = unselectMarkerOnMapClickInitial
-    override var onMapBoundsChange: ((SKMapVC.MapBounds) -> Unit)? = onMapBoundChangeInitial
+    override var onMapBoundsChange: ((MapBounds) -> Unit)? = onMapBoundChangeInitial
     override var mapInteractionSettings: SKMapVC.MapInteractionSettings = mapInteractionSettingsInitial
 
     override fun setCameraPosition(
@@ -56,7 +56,7 @@ class SKMapViewMock(
     val getMapBoundsCalls = mutableListOf<GetMapBoundsCall>()
 
     data class GetMapBoundsCall(
-        val onResult: ((SKMapVC.MapBounds) -> Unit)?
+        val onResult: ((SKMapVC.LatLngBounds) -> Unit)?
     )
 
     val showMyLocationButtonCalls = mutableListOf<ShowMyLocationButtonCall>()
@@ -78,7 +78,7 @@ class SKMapViewMock(
         showMyLocationButtonCalls.add(ShowMyLocationButtonCall(show, onPermissionError))
     }
 
-    override fun getMapBounds(onResult: (SKMapVC.MapBounds) -> Unit) {
+    override fun getMapBounds(onResult: (SKMapVC.LatLngBounds) -> Unit) {
         getMapBoundsCalls.add(GetMapBoundsCall(onResult))
     }
 

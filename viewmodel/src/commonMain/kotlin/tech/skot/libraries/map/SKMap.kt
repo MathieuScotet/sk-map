@@ -33,7 +33,7 @@ class SKMap(
     onMarkerClickedInitial: ((SKMapVC.Marker) -> Unit)? = null,
     onMapClickedInitial: ((LatLng) -> Unit)? = null,
     onMarkerSelectedInitial: ((SKMapVC.Marker?) -> Unit)? = null,
-    onMapBoundsChangeInitial: ((SKMapVC.MapBounds) -> Unit)? = null,
+    onMapBoundsChangeInitial: ((SKMapVC.LatLngBounds) -> Unit)? = null,
 ) : SKComponent<SKMapVC>() {
 
     private val declaredPermissionHelper: DeclaredPermissionHelper = get()
@@ -129,10 +129,10 @@ class SKMap(
         }
 
     /**
-     *  called each time [MapBounds][SKMapVC.MapBounds] change (when mapview is idle)
+     *  called each time [MapBounds][SKMapVC.LatLngBounds] change (when mapview is idle)
      */
     @Suppress("unused")
-    var onMapBoundsChange: ((SKMapVC.MapBounds) -> Unit)?
+    var onMapBoundsChange: ((MapBounds) -> Unit)?
         get() = view.onMapBoundsChange
         set(value) {
             view.onMapBoundsChange = value
@@ -215,10 +215,10 @@ class SKMap(
 
     /**
      * get current MapBounds
-     * @param onResult called once with current [MapBounds][SKMapVC.MapBounds]
+     * @param onResult called once with current [MapBounds][SKMapVC.LatLngBounds]
      */
     @Suppress("unused")
-    fun getMapBounds(onResult: (SKMapVC.MapBounds) -> Unit) {
+    fun getMapBounds(onResult: (MapBounds) -> Unit) {
         view.getMapBounds(onResult)
     }
 

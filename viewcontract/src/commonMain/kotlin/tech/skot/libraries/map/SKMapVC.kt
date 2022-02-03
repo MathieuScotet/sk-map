@@ -13,13 +13,13 @@ import tech.skot.libraries.map.SKMapVC.Marker
  * @property markers the list of [markers][Marker] shown on the map
  * @property onMapClicked a function type called when map clicked, can be null if map click is not used
  * @property selectedMarker the currentSelected Marker, use it to select a marker instead of previous, or to unselect
- * @property onMapBoundsChange called each time [MapBounds][SKMapVC.MapBounds] change (when mapview is idle)
+ * @property onMapBoundsChange called each time [MapBounds][SKMapVC.LatLngBounds] change (when mapview is idle)
  *
  */
 @SKLayoutIsSimpleView
 interface SKMapVC : SKComponentVC {
     var markers: List<Marker>
-    var onMapBoundsChange: ((SKMapVC.MapBounds) -> Unit)?
+    var onMapBoundsChange: ((MapBounds) -> Unit)?
     var mapInteractionSettings: MapInteractionSettings
 
 
@@ -53,9 +53,9 @@ interface SKMapVC : SKComponentVC {
 
     /**
      * get current MapBounds
-     * @param onResult, called once with current [MapBounds][SKMapVC.MapBounds]
+     * @param onResult, called once with current [MapBounds][SKMapVC.LatLngBounds]
      */
-    fun getMapBounds(onResult: (SKMapVC.MapBounds) -> Unit)
+    fun getMapBounds(onResult: (SKMapVC.LatLngBounds) -> Unit)
 
     /**
      * data class representing a marker to show on the map
@@ -66,7 +66,8 @@ interface SKMapVC : SKComponentVC {
     sealed class Marker(
         open val id: String?,
         open val position: LatLng,
-        open val onMarkerClick: (() -> Unit)?
+        open val onMarkerClick: (() -> Unit)?,
+        open val iconHash: (selected: Boolean) -> String
     )
 
     /**
@@ -86,7 +87,9 @@ interface SKMapVC : SKComponentVC {
         open val selectedIcon: Icon,
         override val position: LatLng,
         override val onMarkerClick: (() -> Unit)? = null
-    ) : Marker(id, position, onMarkerClick)
+    ) : Marker(id, position, onMarkerClick, { selected ->
+        "normal_${if (selected) selectedIcon.toString() else normalIcon.toString()}"
+    })
 
 
     /**
@@ -109,7 +112,9 @@ interface SKMapVC : SKComponentVC {
         val selectedColor: Color,
         override val position: LatLng,
         override val onMarkerClick: (() -> Unit)? = null
-    ) : Marker(id, position, onMarkerClick)
+    ) : Marker(id, position, onMarkerClick, { selected ->
+        "colorized_${icon}_${if (selected) normalColor.toString() else selectedColor.toString()}"
+    })
 
     /**
      * data class representing a marker to show on map.
@@ -126,24 +131,28 @@ interface SKMapVC : SKComponentVC {
         override val id: String?,
         val data: Any,
         override val position: LatLng,
-        override val onMarkerClick: (() -> Unit)? = null
-    ) : Marker(id, position, onMarkerClick)
+        override val onMarkerClick: (() -> Unit)? = null,
+        override val iconHash :(selected : Boolean) -> String
+    ) : Marker(id, position, onMarkerClick, iconHash)
 
 
     /**
      * describe MapBounds
-     * @param northeast a [Pair] describing the Lat Lng of the map northeast point
-     * @param southwest a [Pair] describing the Lat Lng of the map southwest point
+     * @param northeast a [Pair] describing the Lat Lng of northeast point
+     * @param southwest a [Pair] describing the Lat Lng of southwest point
      */
-    data class MapBounds(
+    data class LatLngBounds(
         val northeast: LatLng,
         val southwest: LatLng,
     )
 
     sealed class MapInteractionSettings
-    object MapNormalInteractionSettings: MapInteractionSettings()
-    class MapClusteringInteractionSettings( val onClusterClick: ((markers: List<Marker>) -> Unit)?): MapInteractionSettings()
-    class MapCustomInteractionSettings(val customRef : Int, val data : Any?): MapInteractionSettings()
+    object MapNormalInteractionSettings : MapInteractionSettings()
+    class MapClusteringInteractionSettings(val onClusterClick: ((markers: List<Marker>) -> Unit)?) :
+        MapInteractionSettings()
+
+    class MapCustomInteractionSettings(val customRef: Int, val data: Any?) :
+        MapInteractionSettings()
 }
 
 interface InternalSKMapVC : SKMapVC {
@@ -155,6 +164,7 @@ interface InternalSKMapVC : SKMapVC {
     var selectedMarker: Marker?
 }
 
+typealias MapBounds = SKMapVC.LatLngBounds
 typealias LatLng = Pair<Double, Double>
 
 

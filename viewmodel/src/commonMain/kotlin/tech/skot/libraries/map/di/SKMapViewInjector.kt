@@ -14,7 +14,7 @@ interface SKMapViewInjector {
         onMarkerClickInitial: Function1<SKMapVC.Marker, Unit>?,
         onMarkerSelectedInitial: Function1<SKMapVC.Marker?, Unit>?,
         onMapClickedInitial: Function1<LatLng, Unit>?,
-        onMapBoundsChangeInitial: Function1<SKMapVC.MapBounds, Unit>?,
+        onMapBoundsChangeInitial: Function1<SKMapVC.LatLngBounds, Unit>?,
     ): SKMapVC
 }
 

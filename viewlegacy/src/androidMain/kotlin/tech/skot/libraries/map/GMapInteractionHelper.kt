@@ -4,6 +4,7 @@ package tech.skot.libraries.map
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
+import androidx.collection.LruCache
 
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.Projection
@@ -14,12 +15,12 @@ import com.google.android.gms.maps.model.LatLng
 open class GMapInteractionHelper(
     context: Context,
     mapView: MapView,
-    ) : MapInteractionHelper(context, mapView) {
+    memoryCache: LruCache<String, SKMapView.BitmapDescriptorContainer>
+    ) : MapInteractionHelper(context, mapView, memoryCache) {
     private var items: List<Pair<SKMapVC.Marker, Marker>> = emptyList()
     private var lastSelectedMarker: Pair<SKMapVC.Marker, Marker>? = null
     override var onMarkerSelected: ((SKMapVC.Marker?) -> Unit)? = null
     override var onMarkerClick: ((SKMapVC.Marker) -> Unit)? = null
-    override var onCreateCustomMarkerIcon : ((SKMapVC.CustomMarker, selected : Boolean) -> Bitmap?)? = null
 
 
     override fun addMarkers(markers: List<SKMapVC.Marker>) {
@@ -60,7 +61,7 @@ open class GMapInteractionHelper(
                         )
 
                         getIcon(it, lastSelectedMarker?.first?.id == it.id)?.let {
-                            this.setIcon(getBitmapDescriptorFromBitmap(it))
+                            this.setIcon(it)
                         }
                     })
                 }
@@ -77,7 +78,7 @@ open class GMapInteractionHelper(
                             )
                         ).apply {
                             getIcon(skMarker, false)?.let {
-                                this.icon(getBitmapDescriptorFromBitmap(it))
+                                this.icon(it)
                             }
                         }
                 )
@@ -105,7 +106,7 @@ open class GMapInteractionHelper(
         }
     }
 
-    override fun onOnMapBoundsChange(onMapBoundsChange: ((SKMapVC.MapBounds) -> Unit)?) {
+    override fun onOnMapBoundsChange(onMapBoundsChange: ((SKMapVC.LatLngBounds) -> Unit)?) {
         mapView.getMapAsync {
             if (onMapBoundsChange == null) {
                 it.setOnCameraIdleListener(null)
@@ -117,9 +118,9 @@ open class GMapInteractionHelper(
         }
     }
 
-    protected fun getMapBounds(projection: Projection): SKMapVC.MapBounds {
+    protected fun getMapBounds(projection: Projection): SKMapVC.LatLngBounds {
         return projection.visibleRegion.latLngBounds.let {
-            SKMapVC.MapBounds(
+            SKMapVC.LatLngBounds(
                 it.northeast.latitude to it.northeast.longitude,
                 it.southwest.latitude to it.southwest.longitude
             )
@@ -133,14 +134,14 @@ open class GMapInteractionHelper(
         mapView.getMapAsync {
             lastSelectedMarker?.let { current ->
                 getIcon(current.first, false)?.let {
-                    current.second.setIcon(getBitmapDescriptorFromBitmap(it))
+                    current.second.setIcon(it)
                 }
             }
             lastSelectedMarker = items.find {
                 it.first == selectedMarker
             }?.also { newSelectedMarker ->
                 getIcon(newSelectedMarker.first, true)?.let {
-                    newSelectedMarker.second.setIcon(getBitmapDescriptorFromBitmap(it))
+                    newSelectedMarker.second.setIcon(it)
                 }
             }
         }

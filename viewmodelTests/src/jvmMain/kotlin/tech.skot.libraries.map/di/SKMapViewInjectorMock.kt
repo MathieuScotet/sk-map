@@ -18,7 +18,7 @@ class SKMapViewInjectorMock : SKMapViewInjector {
         onMarkerClickInitial: ((SKMapVC.Marker) -> Unit)?,
         onMarkerSelectedInitial: ((SKMapVC.Marker?) -> Unit)?,
         onMapClickedInitial: ((LatLng) -> Unit)?,
-        onMapBoundsChangeInitial: ((SKMapVC.MapBounds) -> Unit)?
+        onMapBoundsChangeInitial: ((SKMapVC.LatLngBounds) -> Unit)?
     ): SKMapVC {
         return SKMapViewMock(
             mapInteractionSettingsInitial,

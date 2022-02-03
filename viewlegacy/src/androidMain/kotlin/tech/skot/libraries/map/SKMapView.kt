@@ -5,12 +5,15 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.graphics.Bitmap
+import androidx.collection.LruCache
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.MapView
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLngBounds
 import tech.skot.core.SKLog
 import tech.skot.core.components.SKActivity
@@ -26,16 +29,18 @@ class SKMapView(
 ) : SKComponentView<MapView>(proxy, activity, fragment, mapView), SKMapRAI {
 
     private var mapInteractionHelper: MapInteractionHelper
+    private val memoryCache: LruCache<String, BitmapDescriptorContainer>
 
 
     /**
      * use it to create BitmapDescriptor in case of  [CustomMarker][SKMapVC.CustomMarker] use
      */
+    @Suppress("unused")
     var onCreateCustomMarkerIcon: ((SKMapVC.CustomMarker, selected: Boolean) -> Bitmap)? = null
-    set(value) {
-        field = value
-        mapInteractionHelper.onCreateCustomMarkerIcon = value
-    }
+        set(value) {
+            field = value
+            mapInteractionHelper.onCreateCustomMarkerIcon = value
+        }
 
 
     init {
@@ -71,22 +76,39 @@ class SKMapView(
             }
         })
 
+        val maxMemory = (Runtime.getRuntime().maxMemory()).toInt()
+        val cacheSize = maxMemory / 8
+        memoryCache =
+            object : LruCache<String, BitmapDescriptorContainer>(cacheSize) {
+
+                override fun sizeOf(
+                    key: String,
+                    bitmap: BitmapDescriptorContainer
+                ): Int {
+                    return bitmap.size
+                }
+            }
+
         mapInteractionHelper = when (val settings = proxy.mapInteractionSettings) {
             is SKMapVC.MapClusteringInteractionSettings -> {
-                GMapClusteringInteractionHelper(activity, mapView)
+                GMapClusteringInteractionHelper(activity, mapView, memoryCache)
             }
             is SKMapVC.MapNormalInteractionSettings -> {
-                GMapInteractionHelper(activity,mapView)
+                GMapInteractionHelper(activity, mapView, memoryCache)
             }
             is SKMapVC.MapCustomInteractionSettings -> {
-                mapRefCustomInteractionHelper[settings.customRef]?.invoke(activity,mapView,settings.data) ?: throw NotImplementedError("With MapCustomInteractionSettings you must provide a CustomInteractionHelper with ref ${settings.customRef} in mapRefCustomInteractionHelper ")
+                mapRefCustomInteractionHelper[settings.customRef]?.invoke(
+                    activity,
+                    mapView,
+                    memoryCache,
+                    settings.data
+                )
+                    ?: throw NotImplementedError("With MapCustomInteractionSettings you must provide a CustomInteractionHelper with ref ${settings.customRef} in mapRefCustomInteractionHelper ")
             }
         }.apply {
             this.onCreateCustomMarkerIcon = this@SKMapView.onCreateCustomMarkerIcon
         }
     }
-
-
 
 
     override fun onSelectedMarker(selectedMarker: SKMapVC.Marker?) {
@@ -120,7 +142,6 @@ class SKMapView(
     }
 
 
-
     override fun onMapInteractionSettings(mapInteractionSettings: SKMapVC.MapInteractionSettings) {
         mapView.getMapAsync { googleMap ->
             googleMap.clear()
@@ -129,29 +150,31 @@ class SKMapView(
                     GMapClusteringInteractionHelper(
                         context = activity,
                         mapView = mapView,
+                        memoryCache = memoryCache,
                         onClusterClick = mapInteractionSettings.onClusterClick
                     )
                 }
                 is SKMapVC.MapNormalInteractionSettings -> {
-                    GMapInteractionHelper(activity, mapView)
+                    GMapInteractionHelper(activity, mapView, memoryCache)
                 }
                 is SKMapVC.MapCustomInteractionSettings -> {
                     mapRefCustomInteractionHelper[mapInteractionSettings.customRef]?.invoke(
                         activity,
                         mapView,
+                        memoryCache,
                         mapInteractionSettings.data
-                    ) ?: throw NotImplementedError("With MapCustomInteractionSettings you must provide a CustomInteractionHelper with ref ${mapInteractionSettings.customRef} in mapRefCustomInteractionHelper ")
+                    )
+                        ?: throw NotImplementedError("With MapCustomInteractionSettings you must provide a CustomInteractionHelper with ref ${mapInteractionSettings.customRef} in mapRefCustomInteractionHelper ")
                 }
             }.apply {
                 this.onCreateCustomMarkerIcon = this@SKMapView.onCreateCustomMarkerIcon
-                onItems(proxy.markers)
+
                 this.onOnMapBoundsChange(proxy.onMapBoundsChange)
                 this.onMarkerClick = proxy.onMarkerClicked
                 this.onMarkerSelected = proxy.onMarkerSelected
                 this.onSelectedMarker(proxy.selectedMarker)
+                this.addMarkers(proxy.markers)
             }
-
-
 
 
         }
@@ -195,11 +218,11 @@ class SKMapView(
     }
 
 
-    override fun getMapBounds(onResult: (SKMapVC.MapBounds) -> Unit) {
+    override fun getMapBounds(onResult: (SKMapVC.LatLngBounds) -> Unit) {
         mapView.getMapAsync {
             it.projection.visibleRegion.latLngBounds.let {
                 onResult(
-                    SKMapVC.MapBounds(
+                    SKMapVC.LatLngBounds(
                         it.northeast.latitude to it.northeast.longitude,
                         it.southwest.latitude to it.southwest.longitude
                     )
@@ -208,7 +231,7 @@ class SKMapView(
         }
     }
 
-    override fun onOnMapBoundsChange(onMapBoundsChange: ((SKMapVC.MapBounds) -> Unit)?) {
+    override fun onOnMapBoundsChange(onMapBoundsChange: ((SKMapVC.LatLngBounds) -> Unit)?) {
         mapInteractionHelper.onOnMapBoundsChange(onMapBoundsChange)
     }
 
@@ -252,7 +275,13 @@ class SKMapView(
 
 
     companion object {
-            val mapRefCustomInteractionHelper : MutableMap<Int,(context : Context, mapView: MapView, data : Any?)-> MapInteractionHelper> = mutableMapOf()
+        val mapRefCustomInteractionHelper: MutableMap<Int, (context: Context, mapView: MapView, memoryCache: LruCache<String, BitmapDescriptorContainer>, data: Any?) -> MapInteractionHelper> =
+            mutableMapOf()
+    }
+
+    class BitmapDescriptorContainer(bitmap: Bitmap) {
+        val bitmapDescriptor: BitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
+        val size: Int = bitmap.byteCount
     }
 
 

@@ -10,6 +10,7 @@ import androidx.collection.LruCache
 import androidx.core.content.ContextCompat
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.BitmapDescriptor
+import tech.skot.core.SKLog
 
 abstract class MapInteractionHelper(
     val context: Context,
@@ -17,17 +18,12 @@ abstract class MapInteractionHelper(
     val memoryCache: LruCache<String, SKMapView.BitmapDescriptorContainer>
 ) {
 
-    abstract fun onSelectedMarker(selectedMarker: SKMapVC.Marker?)
-    abstract var onMarkerSelected: ((SKMapVC.Marker?) -> Unit)?
-    abstract fun addMarkers(markers: List<SKMapVC.Marker>)
-    abstract fun onOnMapBoundsChange(onMapBoundsChange: ((SKMapVC.LatLngBounds) -> Unit)?)
+
     abstract var onMarkerClick: ((SKMapVC.Marker) -> Unit)?
     var onCreateCustomMarkerIcon: ((SKMapVC.CustomMarker, selected: Boolean) -> Bitmap?)? = null
-
-
-
-
-
+    abstract fun onSelectedMarker(selectedMarker: SKMapVC.Marker?)
+    abstract fun addMarkers(markers: List<SKMapVC.Marker>)
+    abstract fun onOnMapBoundsChange(onMapBoundsChange: ((SKMapVC.LatLngBounds) -> Unit)?)
 
     /**
      * Helper method to obtain BitmapDescriptor from resource.
@@ -62,15 +58,18 @@ abstract class MapInteractionHelper(
         }
     }
 
-
     fun getIcon(marker: SKMapVC.Marker, selected: Boolean): BitmapDescriptor? {
         val hash = marker.iconHash(selected)
+
         return when (marker) {
             is SKMapVC.IconMarker -> {
-                memoryCache.get(hash)?.bitmapDescriptor ?: kotlin.run {
+                memoryCache.get(hash)?.bitmapDescriptor?.apply {
+                    SKLog.d("icon : get icon bitmap ${marker.id} from cache with hash $hash")
+                } ?: kotlin.run {
                     if (selected) {
                         getBitmap(context, marker.selectedIcon.res, null)?.let {
                             SKMapView.BitmapDescriptorContainer(it).let {
+                                SKLog.d("icon : put icon bitmap ${marker.id} in cache  with hash $hash")
                                 memoryCache.put(hash, it)
                                 it.bitmapDescriptor
                             }
@@ -78,6 +77,7 @@ abstract class MapInteractionHelper(
                     } else {
                         getBitmap(context, marker.normalIcon.res, null)?.let {
                             SKMapView.BitmapDescriptorContainer(it).let {
+                                SKLog.d("icon : put icon bitmap ${marker.id} in cache  with hash $hash")
                                 memoryCache.put(hash, it)
                                 it.bitmapDescriptor
                             }
@@ -87,10 +87,13 @@ abstract class MapInteractionHelper(
 
             }
             is SKMapVC.ColorizedIconMarker -> {
-                memoryCache.get(hash)?.bitmapDescriptor ?: kotlin.run {
+                memoryCache.get(hash)?.bitmapDescriptor?.apply {
+                    SKLog.d("icon : get colorized bitmap ${marker.id} from cache with hash $hash")
+                } ?: kotlin.run {
                     if (selected) {
                         getBitmap(context, marker.icon.res, marker.selectedColor.res)?.let {
                             SKMapView.BitmapDescriptorContainer(it).let {
+                                SKLog.d("icon : put colorized bitmap ${marker.id} in cache  with hash $hash")
                                 memoryCache.put(hash, it)
                                 it.bitmapDescriptor
                             }
@@ -98,6 +101,7 @@ abstract class MapInteractionHelper(
                     } else {
                         getBitmap(context, marker.icon.res, marker.normalColor.res)?.let {
                             SKMapView.BitmapDescriptorContainer(it).let {
+                                SKLog.d("icon : put colorized bitmap ${marker.id} in cache  with hash $hash")
                                 memoryCache.put(hash, it)
                                 it.bitmapDescriptor
                             }
@@ -106,9 +110,12 @@ abstract class MapInteractionHelper(
                 }
             }
             is SKMapVC.CustomMarker -> {
-                memoryCache.get(hash)?.bitmapDescriptor ?: kotlin.run {
+                memoryCache.get(hash)?.bitmapDescriptor?.apply {
+                    SKLog.d("icon : get custom bitmap ${marker.id} from cache with hash $hash")
+                } ?: kotlin.run {
                     onCreateCustomMarkerIcon?.invoke(marker, selected)?.let {
                         SKMapView.BitmapDescriptorContainer(it).let {
+                            SKLog.d("icon : put custom bitmap ${marker.id} in cache  with hash $hash")
                             memoryCache.put(hash, it)
                             it.bitmapDescriptor
                         }

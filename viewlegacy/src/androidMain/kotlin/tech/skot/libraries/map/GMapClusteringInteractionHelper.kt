@@ -21,15 +21,15 @@ class GMapClusteringInteractionHelper(
     context: Context,
     mapView: MapView,
     memoryCache: LruCache<String, SKMapView.BitmapDescriptorContainer>,
-    var onClusterClick: ((List<SKMapVC.Marker>) -> Unit)? = null,
+    val settings : SKMapVC.MapClusteringInteractionSettings
 ) : MapInteractionHelper(context, mapView, memoryCache) {
     private var _clusterManager: ClusterManager<SKClusterMarker>? = null
     private var onMapBoundsChange: ((MapBounds) -> Unit)? = null
     private var lastSelectedMarker: SKClusterMarker? = null
-    override var onMarkerSelected: ((SKMapVC.Marker?) -> Unit)? = null
     override var onMarkerClick: ((SKMapVC.Marker) -> Unit)? = null
     private var mutext = Mutex()
     var getClusterIcon: ((List<SKMapVC.Marker>) -> Bitmap?)? = null
+    val onClusterClick: ((List<SKMapVC.Marker>) -> Unit)? = settings.onClusterClick
 
 
 
@@ -40,18 +40,38 @@ class GMapClusteringInteractionHelper(
         CoroutineScope(Dispatchers.Main).launch {
             mutext.lock()
             _clusterManager?.let {
-                SKLog.d("AAA use current clusterManager")
+                SKLog.d("getClusterManagerAsync : use current")
                 onReady.invoke(it)
                 mutext.unlock()
             } ?: kotlin.run {
                 mapView.getMapAsync { googleMap ->
-                    SKLog.d("AAA init clusterManager")
+                    SKLog.d("getClusterManagerAsync :  init")
                     val clusterManager = ClusterManager<SKClusterMarker>(context, googleMap)
                     clusterManager.renderer = object : DefaultClusterRenderer<SKClusterMarker>(
                         context,
                         googleMap,
                         clusterManager
                     ) {
+
+                        override fun getColor(clusterSize: Int): Int {
+                            return settings.getClusterColor?.invoke(clusterSize)?.res?.let { context.resources.getColor(it) }?: super.getColor(clusterSize)
+                        }
+
+                        override fun getBucket(cluster: Cluster<SKClusterMarker>): Int {
+                            return settings.getBucket?.invoke(cluster.size)?:  super.getBucket(cluster)
+                        }
+
+                        override fun getClusterText(bucket: Int): String {
+                            return settings.getClusterText?.invoke(bucket)?: super.getClusterText(bucket)
+                        }
+
+
+
+                        override fun getMinClusterSize(): Int {
+                            return settings.getMinClusterSize?.invoke()?:  super.getMinClusterSize()
+                        }
+
+
                         override fun onBeforeClusterItemRendered(
                             item: SKClusterMarker,
                             markerOptions: MarkerOptions
@@ -80,6 +100,7 @@ class GMapClusteringInteractionHelper(
                         }
 
                     }
+
                     googleMap.setOnCameraIdleListener {
                         SKLog.d("AAA OnCameraIdleListener")
                         clusterManager.onCameraIdle()
@@ -114,7 +135,6 @@ class GMapClusteringInteractionHelper(
 
 
     override fun onSelectedMarker(selectedMarker: SKMapVC.Marker?) {
-        onMarkerSelected?.invoke(selectedMarker)
         getClusterManagerAsync { clusterManager ->
             lastSelectedMarker?.let {
                 it.selected = false
@@ -138,6 +158,7 @@ class GMapClusteringInteractionHelper(
 
     override fun addMarkers(markers: List<SKMapVC.Marker>) {
         getClusterManagerAsync {
+            //todo update instead of remove all
             it.clearItems()
             items = markers.map { marker ->
                 SKClusterMarker(marker, false)

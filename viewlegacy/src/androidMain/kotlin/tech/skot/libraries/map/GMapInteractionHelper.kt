@@ -16,33 +16,66 @@ open class GMapInteractionHelper(
     context: Context,
     mapView: MapView,
     memoryCache: LruCache<String, SKMapView.BitmapDescriptorContainer>
-    ) : MapInteractionHelper(context, mapView, memoryCache) {
+) : MapInteractionHelper(context, mapView, memoryCache) {
+
+
     private var items: List<Pair<SKMapVC.Marker, Marker>> = emptyList()
     private var lastSelectedMarker: Pair<SKMapVC.Marker, Marker>? = null
-    override var onMarkerSelected: ((SKMapVC.Marker?) -> Unit)? = null
     override var onMarkerClick: ((SKMapVC.Marker) -> Unit)? = null
 
+    init {
+        mapView.getMapAsync {
+            it.setOnMarkerClickListener { clickedMarker ->
+                val item = items.find { (_, marker) ->
+                    marker == clickedMarker
+                }
+                item?.let {
+                    onMarkerClick?.invoke(item.first)
+                }
+                true
+            }
+        }
+    }
+
+    private fun oldMarkerStillAvailable(
+        marker: SKMapVC.Marker,
+        markers: List<SKMapVC.Marker>
+    ): Boolean {
+        return if (marker.id != null) {
+            markers.any {
+                marker.id == it.id
+            }
+        } else {
+            false
+        }
+    }
+
+    private fun newMarkerAlreadyExist(marker: SKMapVC.Marker): Boolean {
+        return if (marker.id != null) {
+            this.items.any {
+                marker.id == it.first.id
+            }
+        } else {
+            false
+        }
+    }
 
     override fun addMarkers(markers: List<SKMapVC.Marker>) {
         mapView.getMapAsync { map ->
-            //first parts -> remove
-            //second parts -> update
-            val currentMarker = this.items.partition { currentItem ->
-                currentItem.first.id == null || markers.any {
-                    currentItem.first.id == it.id
-                }
+            //first parts -> items in map still exist in new markers list
+            //second parts -> items in maps no longer exist in new markers list
+            val (oldItemsToUpdate, oldItemsToRemove) = this.items.partition { currentItem ->
+                oldMarkerStillAvailable(currentItem.first, markers)
             }
 
             //first parts -> update
             //second parts -> add
-            val newMarkers = markers.partition { marker ->
-                marker.id != null && this.items.any {
-                    marker.id != null && marker.id == it.first.id
-                }
+            val (newValueForItemsToUpdate, newItemsToAdd) = markers.partition { marker ->
+                newMarkerAlreadyExist(marker)
             }
 
             //items to remove from map
-            currentMarker.first.forEach { pair ->
+            oldItemsToRemove.forEach { pair ->
                 if (pair.first.id == lastSelectedMarker?.first?.id) {
                     lastSelectedMarker = null
                 }
@@ -50,8 +83,8 @@ open class GMapInteractionHelper(
             }
 
             //items to update on map
-            val updatedMarker = currentMarker.second.mapNotNull { currentPair ->
-                newMarkers.first.find {
+            val updatedMarker = oldItemsToUpdate.mapNotNull { currentPair ->
+                newValueForItemsToUpdate.find {
                     it.id == currentPair.first.id
                 }?.let {
                     Pair(it, currentPair.second.apply {
@@ -68,7 +101,7 @@ open class GMapInteractionHelper(
             }
 
             //items to add to map
-            val addedMarker = newMarkers.second.mapNotNull { skMarker ->
+            val addedMarker = newItemsToAdd.mapNotNull { skMarker ->
                 val marker = map.addMarker(
                     MarkerOptions()
                         .position(
@@ -88,21 +121,6 @@ open class GMapInteractionHelper(
             }
 
             this.items = updatedMarker + addedMarker
-        }
-    }
-
-
-    init {
-        mapView.getMapAsync {
-            it.setOnMarkerClickListener { clickedMarker ->
-                val item = items.find { (_, marker) ->
-                    marker == clickedMarker
-                }
-                item?.let {
-                    onMarkerClick?.invoke(item.first)
-                }
-                true
-            }
         }
     }
 
@@ -128,9 +146,7 @@ open class GMapInteractionHelper(
         }
     }
 
-
     override fun onSelectedMarker(selectedMarker: SKMapVC.Marker?) {
-        onMarkerSelected?.invoke(selectedMarker)
         mapView.getMapAsync {
             lastSelectedMarker?.let { current ->
                 getIcon(current.first, false)?.let {

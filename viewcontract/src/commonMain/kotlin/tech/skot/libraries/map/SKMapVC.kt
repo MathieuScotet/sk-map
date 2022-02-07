@@ -11,17 +11,18 @@ import tech.skot.libraries.map.SKMapVC.Marker
  * # SKMap
  * ## This component can be used if you want to show a map in your application
  * @property markers the list of [markers][Marker] shown on the map
- * @property onMapClicked a function type called when map clicked, can be null if map click is not used
+ * @property mapInteractionSettings [MapInteractionSettings][SKMapVC.MapInteractionSettings] to use on map, Any of [MapNormalInteractionSettings][SKMapVC.MapNormalInteractionSettings], [MapClusteringInteractionSettings][SKMapVC.MapClusteringInteractionSettings] or [MapCustomInteractionSettings][SKMapVC.MapCustomInteractionSettings]
  * @property selectedMarker the currentSelected Marker, use it to select a marker instead of previous, or to unselect
  * @property onMapBoundsChange called each time [MapBounds][SKMapVC.LatLngBounds] change (when mapview is idle)
  *
  */
 @SKLayoutIsSimpleView
 interface SKMapVC : SKComponentVC {
+
+
     var markers: List<Marker>
     var onMapBoundsChange: ((MapBounds) -> Unit)?
     var mapInteractionSettings: MapInteractionSettings
-
 
     /**
      *  function to call for moving camera on another location
@@ -91,7 +92,6 @@ interface SKMapVC : SKComponentVC {
         "normal_${if (selected) selectedIcon.toString() else normalIcon.toString()}"
     })
 
-
     /**
      * data class representing a marker to show on map.
      * icon is colorized when selected state change
@@ -123,6 +123,7 @@ interface SKMapVC : SKComponentVC {
      * @param position a [Pair] of [Double] representing the location of the marker
      * @param onMarkerClick a function type called when marker is clicked
      * @param data objet that you can use in screenView Code to create marker as you want in the implementation of  SKMapView.onCreateCustomMarkerIcon lambda
+     * @param iconHash [String], Used for bitmap cache. Must be unique for each different bitmap, and the same for same bitmap. Set it with caution, if you use any irrelevant parameter to know which bitmap to use, cache of Bitmap will be inefficient
      * @see Marker
      * @see ColorizedIconMarker
      * @see IconMarker
@@ -132,9 +133,8 @@ interface SKMapVC : SKComponentVC {
         val data: Any,
         override val position: LatLng,
         override val onMarkerClick: (() -> Unit)? = null,
-        override val iconHash :(selected : Boolean) -> String
+        override val iconHash: (selected: Boolean) -> String
     ) : Marker(id, position, onMarkerClick, iconHash)
-
 
     /**
      * describe MapBounds
@@ -147,12 +147,36 @@ interface SKMapVC : SKComponentVC {
     )
 
     sealed class MapInteractionSettings
-    object MapNormalInteractionSettings : MapInteractionSettings()
-    class MapClusteringInteractionSettings(val onClusterClick: ((markers: List<Marker>) -> Unit)?) :
-        MapInteractionSettings()
+    class MapClusteringInteractionSettings(
+        /**
+         * Lambda with List<Marker> in parameter, called when a cluster is clicked
+         */
+        val onClusterClick: ((markers: List<Marker>) -> Unit)?,
+        /**
+         * Lambda with clusterSize in parameter, return color of cluster
+         * by default, variety of blue in conjonction with cluster size
+         */
+        val getClusterColor: ((clusterSize: Int) -> Color)? = null,
+        /**
+         * Lambda with clusterSize in parameter, return text of cluster
+         * by default [0..9] 10+, 20+, 50+, 100+, 200+, 500+, 1000+
+         */
+        val getClusterText: ((clusterSize: Int) -> String)? = null,
+        /**
+         * Lambda with clusterSize in parameter, return bucket id (used to reused same cluster for same size range)
+         * by default [0..9] 10, 20, 50, 100, 200, 500, 1000
+         */
+        val getBucket: ((clusterSize: Int) -> Int)? = null,
+        /**
+         * Lambda to set min cluster size (4 by default)
+         */
+        val getMinClusterSize: (() -> Int)? = null
+    ) : MapInteractionSettings()
 
     class MapCustomInteractionSettings(val customRef: Int, val data: Any?) :
         MapInteractionSettings()
+
+    object MapNormalInteractionSettings : MapInteractionSettings()
 }
 
 interface InternalSKMapVC : SKMapVC {

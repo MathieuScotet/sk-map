@@ -28,9 +28,9 @@ class SKMapView(
     val mapView: MapView
 ) : SKComponentView<MapView>(proxy, activity, fragment, mapView), SKMapRAI {
 
-    private var mapInteractionHelper: MapInteractionHelper
-    private val memoryCache: LruCache<String, BitmapDescriptorContainer>
 
+    private var mapInteractionHelper: MapInteractionHelper? = null
+    private val memoryCache: LruCache<String, BitmapDescriptorContainer>
 
     /**
      * use it to create BitmapDescriptor in case of  [CustomMarker][SKMapVC.CustomMarker] use
@@ -39,9 +39,8 @@ class SKMapView(
     var onCreateCustomMarkerIcon: ((SKMapVC.CustomMarker, selected: Boolean) -> Bitmap)? = null
         set(value) {
             field = value
-            mapInteractionHelper.onCreateCustomMarkerIcon = value
+            mapInteractionHelper?.onCreateCustomMarkerIcon = value
         }
-
 
     init {
         lifecycle.addObserver(object : DefaultLifecycleObserver {
@@ -89,36 +88,34 @@ class SKMapView(
                 }
             }
 
-        mapInteractionHelper = when (val settings = proxy.mapInteractionSettings) {
-            is SKMapVC.MapClusteringInteractionSettings -> {
-                GMapClusteringInteractionHelper(activity, mapView, memoryCache)
-            }
-            is SKMapVC.MapNormalInteractionSettings -> {
-                GMapInteractionHelper(activity, mapView, memoryCache)
-            }
-            is SKMapVC.MapCustomInteractionSettings -> {
-                mapRefCustomInteractionHelper[settings.customRef]?.invoke(
-                    activity,
-                    mapView,
-                    memoryCache,
-                    settings.data
-                )
-                    ?: throw NotImplementedError("With MapCustomInteractionSettings you must provide a CustomInteractionHelper with ref ${settings.customRef} in mapRefCustomInteractionHelper ")
-            }
-        }.apply {
-            this.onCreateCustomMarkerIcon = this@SKMapView.onCreateCustomMarkerIcon
-        }
+//        mapInteractionHelper = when (val settings = proxy.mapInteractionSettings) {
+//            is SKMapVC.MapClusteringInteractionSettings -> {
+//                GMapClusteringInteractionHelper(activity, mapView, memoryCache, settings)
+//            }
+//            is SKMapVC.MapNormalInteractionSettings -> {
+//                GMapInteractionHelper(activity, mapView, memoryCache)
+//            }
+//            is SKMapVC.MapCustomInteractionSettings -> {
+//                mapRefCustomInteractionHelper[settings.customRef]?.invoke(
+//                    activity,
+//                    mapView,
+//                    memoryCache,
+//                    settings.data
+//                )
+//                    ?: throw NotImplementedError("With MapCustomInteractionSettings you must provide a CustomInteractionHelper with ref ${settings.customRef} in mapRefCustomInteractionHelper ")
+//            }
+//        }.apply {
+//            this.onCreateCustomMarkerIcon = this@SKMapView.onCreateCustomMarkerIcon
+//        }
     }
 
-
     override fun onSelectedMarker(selectedMarker: SKMapVC.Marker?) {
-        mapInteractionHelper.onSelectedMarker(selectedMarker)
+        mapInteractionHelper?.onSelectedMarker(selectedMarker)
     }
 
     override fun onItems(items: List<SKMapVC.Marker>) {
-        mapInteractionHelper.addMarkers(markers = items)
+        mapInteractionHelper?.addMarkers(markers = items)
     }
-
 
     override fun onOnMapClicked(onMapClicked: ((LatLng) -> Unit)?) {
         mapView.getMapAsync {
@@ -132,26 +129,21 @@ class SKMapView(
         }
     }
 
-
     override fun onOnMarkerClick(onMarkerClick: ((SKMapVC.Marker) -> Unit)?) {
-        mapInteractionHelper.onMarkerClick = onMarkerClick
+        mapInteractionHelper?.onMarkerClick = onMarkerClick
     }
-
-    override fun onOnMarkerSelected(onMarkerSelected: ((SKMapVC.Marker?) -> Unit)?) {
-        mapInteractionHelper.onMarkerSelected = onMarkerSelected
-    }
-
 
     override fun onMapInteractionSettings(mapInteractionSettings: SKMapVC.MapInteractionSettings) {
         mapView.getMapAsync { googleMap ->
             googleMap.clear()
+            mapInteractionHelper = null
             mapInteractionHelper = when (mapInteractionSettings) {
                 is SKMapVC.MapClusteringInteractionSettings -> {
                     GMapClusteringInteractionHelper(
                         context = activity,
                         mapView = mapView,
                         memoryCache = memoryCache,
-                        onClusterClick = mapInteractionSettings.onClusterClick
+                        mapInteractionSettings
                     )
                 }
                 is SKMapVC.MapNormalInteractionSettings -> {
@@ -168,10 +160,8 @@ class SKMapView(
                 }
             }.apply {
                 this.onCreateCustomMarkerIcon = this@SKMapView.onCreateCustomMarkerIcon
-
                 this.onOnMapBoundsChange(proxy.onMapBoundsChange)
                 this.onMarkerClick = proxy.onMarkerClicked
-                this.onMarkerSelected = proxy.onMarkerSelected
                 this.onSelectedMarker(proxy.selectedMarker)
                 this.addMarkers(proxy.markers)
             }
@@ -180,7 +170,6 @@ class SKMapView(
         }
 
     }
-
 
     override fun setCameraPosition(
         position: LatLng,
@@ -217,7 +206,6 @@ class SKMapView(
         }
     }
 
-
     override fun getMapBounds(onResult: (SKMapVC.LatLngBounds) -> Unit) {
         mapView.getMapAsync {
             it.projection.visibleRegion.latLngBounds.let {
@@ -232,9 +220,8 @@ class SKMapView(
     }
 
     override fun onOnMapBoundsChange(onMapBoundsChange: ((SKMapVC.LatLngBounds) -> Unit)?) {
-        mapInteractionHelper.onOnMapBoundsChange(onMapBoundsChange)
+        mapInteractionHelper?.onOnMapBoundsChange(onMapBoundsChange)
     }
-
 
     override fun setCameraZoom(zoomLevel: Float, animate: Boolean) {
         mapView.getMapAsync {
@@ -273,15 +260,14 @@ class SKMapView(
         }
     }
 
+    class BitmapDescriptorContainer(bitmap: Bitmap) {
+        val bitmapDescriptor: BitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
+        val size: Int = bitmap.byteCount
+    }
 
     companion object {
         val mapRefCustomInteractionHelper: MutableMap<Int, (context: Context, mapView: MapView, memoryCache: LruCache<String, BitmapDescriptorContainer>, data: Any?) -> MapInteractionHelper> =
             mutableMapOf()
-    }
-
-    class BitmapDescriptorContainer(bitmap: Bitmap) {
-        val bitmapDescriptor: BitmapDescriptor = BitmapDescriptorFactory.fromBitmap(bitmap)
-        val size: Int = bitmap.byteCount
     }
 
 

@@ -13,6 +13,7 @@ import tech.skot.libraries.map.view.Permissions
  * Based on google Map
  * no iOS version at this time
  *
+ * @param mapInteractionSettingsInitial the [SKMapVC.MapInteractionSettings] to use for map. Any of [MapNormalInteractionSettings][SKMapVC.MapNormalInteractionSettings], [MapClusteringInteractionSettings][SKMapVC.MapClusteringInteractionSettings] or [MapCustomInteractionSettings][SKMapVC.MapCustomInteractionSettings]
  * @param markersInitial the [markers][SKMapVC.Marker] shown on the map
  * @param selectedMarkerInitial the first marker selected
  * @param selectMarkerOnClickInitial indicate if a marker must be selected when clicked
@@ -25,7 +26,7 @@ import tech.skot.libraries.map.view.Permissions
  */
 @Suppress("unused")
 class SKMap(
-    mapInteractionSettingsInitial:  SKMapVC.MapInteractionSettings = SKMapVC.MapNormalInteractionSettings,
+    mapInteractionSettingsInitial: SKMapVC.MapInteractionSettings = SKMapVC.MapNormalInteractionSettings,
     markersInitial: List<SKMapVC.Marker>,
     selectedMarkerInitial: SKMapVC.Marker? = null,
     selectMarkerOnClickInitial: Boolean = true,
@@ -52,7 +53,6 @@ class SKMap(
             selectedMarker = it
         }
     }
-
 
 
     override val view: SKMapVC = skmapViewInjector.sKMap(

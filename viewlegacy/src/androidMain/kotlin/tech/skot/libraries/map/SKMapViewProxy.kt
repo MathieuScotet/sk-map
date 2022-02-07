@@ -213,9 +213,5 @@ interface SKMapRAI {
         onMarkerClick: ((SKMapVC.Marker) -> Unit)?
     )
 
-    fun onOnMarkerSelected(
-        onMarkerSelected: ((SKMapVC.Marker?) -> Unit)?
-    )
-
     fun onMapInteractionSettings(mapInteractionSettings: SKMapVC.MapInteractionSettings)
 }

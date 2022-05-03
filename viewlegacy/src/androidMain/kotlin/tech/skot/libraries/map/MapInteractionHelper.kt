@@ -23,7 +23,7 @@ abstract class MapInteractionHelper(
     val memoryCache: LruCache<String, SKMapView.BitmapDescriptorContainer>
 ) {
 
-    private var lineItems: List<Pair<SKMapVC.Line, Polyline>> = emptyList()
+    private var polylineItems: List<Pair<SKMapVC.Polyline, Polyline>> = emptyList()
     abstract var onMarkerClick: ((SKMapVC.Marker) -> Unit)?
     var onCreateCustomMarkerIcon: ((SKMapVC.CustomMarker, selected: Boolean) -> Bitmap?)? = null
     abstract fun onSelectedMarker(selectedMarker: SKMapVC.Marker?)
@@ -32,40 +32,40 @@ abstract class MapInteractionHelper(
     abstract fun onOnMapBoundsChange(onMapBoundsChange: ((SKMapVC.LatLngBounds) -> Unit)?)
 
     private fun oldLineStillAvailable(
-        line: SKMapVC.Line,
-        lines: List<SKMapVC.Line>
+        polyline: SKMapVC.Polyline,
+        polylines: List<SKMapVC.Polyline>
     ): Boolean {
-        return if (line.id != null) {
-            lines.any {
-                line.id == it.id
+        return if (polyline.id != null) {
+            polylines.any {
+                polyline.id == it.id
             }
         } else {
             false
         }
     }
 
-    private fun newLineAlreadyExist(line: SKMapVC.Line): Boolean {
-        return if (line.id != null) {
-            this.lineItems.any {
-                line.id == it.first.id
+    private fun newLineAlreadyExist(polyline: SKMapVC.Polyline): Boolean {
+        return if (polyline.id != null) {
+            this.polylineItems.any {
+                polyline.id == it.first.id
             }
         } else {
             false
         }
     }
 
-    fun addLines(lines: List<SKMapVC.Line>) {
+    fun addLines(polylines: List<SKMapVC.Polyline>) {
         mapView.getMapAsync { googleMap ->
 
             //first parts -> items in map still exist in new markers list
             //second parts -> items in maps no longer exist in new markers list
-            val (oldItemsToUpdate, oldItemsToRemove) = this.lineItems.partition { currentItem ->
-                oldLineStillAvailable(currentItem.first, lines)
+            val (oldItemsToUpdate, oldItemsToRemove) = this.polylineItems.partition { currentItem ->
+                oldLineStillAvailable(currentItem.first, polylines)
             }
 
             //first parts -> update
             //second parts -> add
-            val (newValueForItemsToUpdate, newItemsToAdd) = lines.partition { marker ->
+            val (newValueForItemsToUpdate, newItemsToAdd) = polylines.partition { marker ->
                 newLineAlreadyExist(marker)
             }
 
@@ -103,7 +103,7 @@ abstract class MapInteractionHelper(
 
             }
 
-            this.lineItems = updatedMarker + addedLines
+            this.polylineItems = updatedMarker + addedLines
 
         }
 

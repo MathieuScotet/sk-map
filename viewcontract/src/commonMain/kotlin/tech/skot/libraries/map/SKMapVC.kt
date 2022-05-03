@@ -24,7 +24,7 @@ interface SKMapVC : SKComponentVC {
 
     var showLog: Boolean
     var markers: List<Marker>
-    var lines: List<Line>
+    var polylines: List<Polyline>
     var onMapBoundsChange: ((MapBounds) -> Unit)?
     var mapInteractionSettings: MapInteractionSettings
 
@@ -65,9 +65,26 @@ interface SKMapVC : SKComponentVC {
 
     fun getCurrentLocation(onResult: (LatLng) -> Unit)
 
+
+    /**
+     * data class representing a connected series of line segments.
+     * @param points sequence of [point][LatLng]
+     * @param color color of polyline
+     * @param id unique id for the polyline
+     * @param lineWidth, [Dimen] representing width of the line
+     * @see [tech.skot.core.view.DimenDP]
+     * @see [tech.skot.core.view.DimenRef]
+     */
+    data class Polyline(
+        val points: List<LatLng>,
+        val color: Color,
+        val id: String?,
+        val lineWidth: Dimen,
+    )
+
     /**
      * data class representing a marker to show on the map
-     * @param itemId unique id for the marker, used to update position
+     * @param id unique id for the marker, used to update position
      * @param position a [Pair] of [Double] representing the location of the marker
      * @param onMarkerClick a function type called when marker is clicked
      */
@@ -76,13 +93,6 @@ interface SKMapVC : SKComponentVC {
         open val position: LatLng,
         open val onMarkerClick: (() -> Unit)?,
         open val iconHash: (selected: Boolean) -> String
-    )
-
-    data class Line(
-        val points: List<LatLng>,
-        val color: Color,
-        val id: String?,
-        val lineWidth: Dimen,
     )
 
     /**
@@ -197,6 +207,7 @@ interface InternalSKMapVC : SKMapVC {
     var selectMarkerOnClick: Boolean
     var unselectMarkerOnMapClick: Boolean
     var onMapClicked: ((LatLng) -> Unit)?
+    var onMapLongClicked: ((LatLng) -> Unit)?
     var onMarkerClicked: ((Marker) -> Unit)?
     var onMarkerSelected: ((Marker?) -> Unit)?
     var selectedMarker: Marker?

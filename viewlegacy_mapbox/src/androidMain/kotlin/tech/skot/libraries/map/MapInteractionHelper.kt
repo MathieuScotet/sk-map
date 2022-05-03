@@ -21,7 +21,7 @@ abstract class MapInteractionHelper(
     abstract fun onSelectedMarker(selectedMarker: SKMapVC.Marker?)
     abstract var onMarkerSelected: ((SKMapVC.Marker?) -> Unit)?
     abstract fun addMarkers(markers: List<SKMapVC.Marker>)
-    abstract fun addLines(lines: List<SKMapVC.Line>)
+    abstract fun addLines(polylines: List<SKMapVC.Polyline>)
     abstract fun onOnMapBoundsChange(onMapBoundsChange: ((SKMapVC.LatLngBounds) -> Unit)?)
     abstract var onMarkerClick: ((SKMapVC.Marker) -> Unit)?
     var onCreateCustomMarkerIcon: ((SKMapVC.CustomMarker, selected: Boolean) -> Bitmap?)? = null

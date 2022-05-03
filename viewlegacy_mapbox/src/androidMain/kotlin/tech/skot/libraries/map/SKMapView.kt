@@ -20,9 +20,7 @@ import com.mapbox.maps.MapboxMap
 import com.mapbox.maps.dsl.cameraOptions
 import com.mapbox.maps.plugin.animation.flyTo
 import com.mapbox.maps.plugin.delegates.listeners.OnMapLoadedListener
-import com.mapbox.maps.plugin.gestures.OnMapClickListener
-import com.mapbox.maps.plugin.gestures.addOnMapClickListener
-import com.mapbox.maps.plugin.gestures.removeOnMapClickListener
+import com.mapbox.maps.plugin.gestures.*
 import com.mapbox.maps.plugin.locationcomponent.LocationConsumer
 import com.mapbox.maps.plugin.locationcomponent.location
 import tech.skot.core.components.SKActivity
@@ -41,6 +39,7 @@ class SKMapView(
     private var mapInteractionHelper: MapInteractionHelper? = null
     private val memoryCache: LruCache<String, Bitmap>
     private var onMapClick: OnMapClickListener? = null
+    private var onMapLongClick: OnMapLongClickListener? = null
 
     val locationConsumer = object : LocationConsumer {
         override fun onBearingUpdated(
@@ -113,8 +112,8 @@ class SKMapView(
         mapInteractionHelper?.addMarkers(markers)
     }
 
-    override fun onLines(lines: List<SKMapVC.Line>) {
-        mapInteractionHelper?.addLines(lines)
+    override fun onLines(polylines: List<SKMapVC.Polyline>) {
+        mapInteractionHelper?.addLines(polylines)
     }
 
 
@@ -130,6 +129,22 @@ class SKMapView(
 
             onMapClick?.let {
                 mapBoxView.addOnMapClickListener(it)
+            }
+        }
+    }
+
+    override fun onOnMapLongClicked(onMapLongClicked: ((LatLng) -> Unit)?) {
+        mapView.getMapboxMap { mapBoxView ->
+            onMapLongClick?.let {
+                mapBoxView.removeOnMapLongClickListener(it)
+            }
+            onMapLongClick = OnMapLongClickListener { point ->
+                onMapLongClicked?.invoke(point.latitude() to point.longitude())
+                true
+            }
+
+            onMapLongClick?.let {
+                mapBoxView.addOnMapLongClickListener(it)
             }
         }
     }
@@ -172,7 +187,7 @@ class SKMapView(
                 this.onMarkerSelected = proxy.onMarkerSelected
                 this.onSelectedMarker(proxy.selectedMarker)
                 this.addMarkers(proxy.markers)
-                this.addLines(proxy.lines)
+                this.addLines(proxy.polylines)
             }
         }
     }

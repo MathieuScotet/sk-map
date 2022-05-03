@@ -5,19 +5,21 @@ import tech.skot.core.components.SKComponentViewMock
 class SKMapViewMock(
     mapInteractionSettingsInitial: SKMapVC.MapInteractionSettings,
     itemsInitial: List<SKMapVC.Marker>,
-    linesInitial: List<SKMapVC.Line>,
+    linesInitial: List<SKMapVC.Polyline>,
     selectedMarkerInitial: SKMapVC.Marker?,
     selectMarkerOnClickInitial: Boolean,
     unselectMarkerOnMapClickInitial: Boolean,
     onMarkerClickedInitial: ((SKMapVC.Marker) -> Unit)?,
     onMapClickedInitial: ((Pair<Double, Double>) -> Unit)?,
+    onMapLongClickedInitial: ((Pair<Double, Double>) -> Unit)?,
     onMarkerSelectedInitial: ((SKMapVC.Marker?) -> Unit)?,
     onMapBoundChangeInitial: ((SKMapVC.LatLngBounds) -> Unit)?,
     showLogInitial: Boolean
 ) : SKComponentViewMock(), InternalSKMapVC {
     override var markers: List<SKMapVC.Marker> = itemsInitial
-    override var lines: List<SKMapVC.Line> = linesInitial
+    override var polylines: List<SKMapVC.Polyline> = linesInitial
     override var onMapClicked: ((Pair<Double, Double>) -> Unit)? = onMapClickedInitial
+    override var onMapLongClicked: ((Pair<Double, Double>) -> Unit)? = onMapLongClickedInitial
     override var onMarkerClicked: ((SKMapVC.Marker) -> Unit)? = onMarkerClickedInitial
     override var onMarkerSelected: ((SKMapVC.Marker?) -> Unit)? = onMarkerSelectedInitial
     override var selectedMarker: SKMapVC.Marker? = selectedMarkerInitial

@@ -11,13 +11,14 @@ import tech.skot.view.live.SKMessage
 class SKMapViewProxy(
     mapInteractionSettingsInitial: SKMapVC.MapInteractionSettings,
     markersInitial: List<SKMapVC.Marker>,
-    linesInitial: List<SKMapVC.Line>,
+    linesInitial: List<SKMapVC.Polyline>,
     selectedMarkerInitial: SKMapVC.Marker?,
     selectMarkerOnClickInitial: Boolean,
     unselectMarkerOnMapClickInitial: Boolean,
     onMarkerClickInitial: Function1<SKMapVC.Marker, Unit>?,
     onMarkerSelectedInitial: Function1<SKMapVC.Marker?, Unit>?,
     onMapClickedInitial: Function1<LatLng, Unit>?,
+    onMapLongClickedInitial: Function1<LatLng, Unit>?,
     onMapBoundsChangeInitial: Function1<SKMapVC.LatLngBounds, Unit>?,
     showLogInitial: Boolean
 ) : SKComponentViewProxy<MapView>(), InternalSKMapVC {
@@ -31,12 +32,16 @@ class SKMapViewProxy(
     override var markers: List<SKMapVC.Marker> by markersLD
 
 
-    private val linesLD: MutableSKLiveData<List<SKMapVC.Line>> = MutableSKLiveData(linesInitial)
-    override var lines: List<SKMapVC.Line> by linesLD
+    private val linesLD: MutableSKLiveData<List<SKMapVC.Polyline>> = MutableSKLiveData(linesInitial)
+    override var polylines: List<SKMapVC.Polyline> by linesLD
 
     private val onMapClickedLD: MutableSKLiveData<Function1<LatLng, Unit>?> =
         MutableSKLiveData(onMapClickedInitial)
     override var onMapClicked: Function1<LatLng, Unit>? by onMapClickedLD
+
+    private val onMapLongClickedLD: MutableSKLiveData<Function1<LatLng, Unit>?> =
+        MutableSKLiveData(onMapLongClickedInitial)
+    override var onMapLongClicked: Function1<LatLng, Unit>? by onMapLongClickedLD
 
 
     private val onMarkerClickLD: MutableSKLiveData<Function1<SKMapVC.Marker, Unit>?> =
@@ -150,6 +155,11 @@ class SKMapViewProxy(
             onOnMapClicked(it)
         }
 
+        onMapLongClickedLD.observe {
+            onOnMapLongClicked(it)
+        }
+
+
         setCameraPositionMessage.observe {
             setCameraPosition(it.position, it.zoomLevel, it.animate)
         }
@@ -211,7 +221,7 @@ class SKMapViewProxy(
 
 interface SKMapRAI {
     fun onMarkers(markers: List<SKMapVC.Marker>)
-    fun onLines(lines: List<SKMapVC.Line>)
+    fun onLines(polylines: List<SKMapVC.Polyline>)
 
     fun onSelectedMarker(selectedMarker: SKMapVC.Marker?)
 
@@ -240,6 +250,10 @@ interface SKMapRAI {
 
     fun onOnMapClicked(
         onMapClicked: ((LatLng) -> Unit)?
+    )
+
+    fun onOnMapLongClicked(
+        onMapLongClicked: ((LatLng) -> Unit)?
     )
 
     fun onOnMarkerClick(

@@ -123,8 +123,8 @@ class SKMapView(
         mapInteractionHelper?.addMarkers(markers)
     }
 
-    override fun onLines(lines: List<SKMapVC.Line>) {
-        mapInteractionHelper?.addLines(lines)
+    override fun onLines(polylines: List<SKMapVC.Polyline>) {
+        mapInteractionHelper?.addLines(polylines)
     }
 
     override fun onOnMapClicked(onMapClicked: ((LatLng) -> Unit)?) {
@@ -132,6 +132,18 @@ class SKMapView(
             if (onMapClicked != null) {
                 it.setOnMapClickListener {
                     onMapClicked.invoke(it.latitude to it.longitude)
+                }
+            } else {
+                it.setOnMapClickListener(null)
+            }
+        }
+    }
+
+    override fun onOnMapLongClicked(onMapLongClicked: ((LatLng) -> Unit)?) {
+        mapView.getMapAsync {
+            if (onMapLongClicked != null) {
+                it.setOnMapLongClickListener {
+                    onMapLongClicked.invoke(it.latitude to it.longitude)
                 }
             } else {
                 it.setOnMapClickListener(null)
@@ -174,7 +186,7 @@ class SKMapView(
                 this.onMarkerClick = proxy.onMarkerClicked
                 this.onSelectedMarker(proxy.selectedMarker)
                 this.addMarkers(proxy.markers)
-                this.addLines(proxy.lines)
+                this.addLines(proxy.polylines)
             }
 
 

@@ -28,12 +28,13 @@ import tech.skot.libraries.map.view.Permissions
 class SKMap(
     mapInteractionSettingsInitial: SKMapVC.MapInteractionSettings = SKMapVC.MapNormalInteractionSettings,
     markersInitial: List<SKMapVC.Marker> = emptyList(),
-    linesInitial: List<SKMapVC.Line> = emptyList(),
+    linesInitial: List<SKMapVC.Polyline> = emptyList(),
     selectedMarkerInitial: SKMapVC.Marker? = null,
     selectMarkerOnClickInitial: Boolean = true,
     unselectMarkerOnMapClickInitial: Boolean = true,
     onMarkerClickedInitial: ((SKMapVC.Marker) -> Unit)? = null,
     onMapClickedInitial: ((LatLng) -> Unit)? = null,
+    onMapLongClickedInitial:  ((LatLng) -> Unit)? = null,
     onMarkerSelectedInitial: ((SKMapVC.Marker?) -> Unit)? = null,
     onMapBoundsChangeInitial: ((SKMapVC.LatLngBounds) -> Unit)? = null,
     showLogInitial: Boolean = false
@@ -48,6 +49,11 @@ class SKMap(
             selectedMarker = null
         }
     }
+
+    private val internalOnMapLongClicked: (LatLng) -> Unit = {
+        onMapLongClicked?.invoke(it)
+    }
+
     private val internalOnMarkerClicked: (SKMapVC.Marker) -> Unit = {
         onMarkerClicked?.invoke(it)
         it.onMarkerClick?.invoke()
@@ -66,6 +72,7 @@ class SKMap(
         unselectMarkerOnMapClickInitial = unselectMarkerOnMapClickInitial,
         onMarkerClickInitial = internalOnMarkerClicked,
         onMapClickedInitial = internalOnMapClicked,
+        onMapLongClickedInitial = internalOnMapLongClicked,
         onMarkerSelectedInitial = onMarkerSelectedInitial,
         onMapBoundsChangeInitial = onMapBoundsChangeInitial,
         showLogInitial = showLogInitial
@@ -118,6 +125,12 @@ class SKMap(
     @Suppress("unused")
     var onMapClicked: ((LatLng) -> Unit)? = onMapClickedInitial
 
+    /**
+     * called on map long click
+     */
+    @Suppress("unused")
+    var onMapLongClicked: ((LatLng) -> Unit)? = onMapLongClickedInitial
+
 
     var onMarkerSelected: ((SKMapVC.Marker?) -> Unit)?
         get() = internalView.onMarkerSelected
@@ -139,10 +152,10 @@ class SKMap(
      * list of lines
      */
     @Suppress("unused")
-    var lines: List<SKMapVC.Line>
-        get() = view.lines
+    var polylines: List<SKMapVC.Polyline>
+        get() = view.polylines
         set(value) {
-            view.lines = value
+            view.polylines = value
         }
 
     /**

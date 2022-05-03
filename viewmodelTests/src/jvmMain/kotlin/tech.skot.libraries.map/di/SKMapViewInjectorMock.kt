@@ -9,13 +9,14 @@ class SKMapViewInjectorMock : SKMapViewInjector {
     override fun sKMap(
         mapInteractionSettingsInitial: SKMapVC.MapInteractionSettings,
         markersInitial: List<SKMapVC.Marker>,
-        linesInitial: List<SKMapVC.Line>,
+        linesInitial: List<SKMapVC.Polyline>,
         selectedMarkerInitial: SKMapVC.Marker?,
         selectMarkerOnClickInitial: Boolean,
         unselectMarkerOnMapClickInitial: Boolean,
         onMarkerClickInitial: ((SKMapVC.Marker) -> Unit)?,
         onMarkerSelectedInitial: ((SKMapVC.Marker?) -> Unit)?,
         onMapClickedInitial: ((LatLng) -> Unit)?,
+        onMapLongClickedInitial: ((LatLng) -> Unit)?,
         onMapBoundsChangeInitial: ((SKMapVC.LatLngBounds) -> Unit)?,
         showLogInitial: Boolean
     ): SKMapVC {
@@ -28,6 +29,7 @@ class SKMapViewInjectorMock : SKMapViewInjector {
             unselectMarkerOnMapClickInitial,
             onMarkerClickInitial,
             onMapClickedInitial,
+            onMapLongClickedInitial,
             onMarkerSelectedInitial,
             onMapBoundsChangeInitial,
             showLogInitial

@@ -6,7 +6,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("tech.skot:plugin:${Versions.framework}")
+        classpath("${Versions.frameworkGroup}:plugin:${Versions.framework}")
         classpath("org.jetbrains.dokka:dokka-gradle-plugin:1.5.30")
     }
 }

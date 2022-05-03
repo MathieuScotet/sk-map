@@ -8,13 +8,14 @@ interface SKMapViewInjector {
     fun sKMap(
         mapInteractionSettingsInitial: SKMapVC.MapInteractionSettings,
         markersInitial: List<SKMapVC.Marker>,
-        linesInitial: List<SKMapVC.Line>,
+        linesInitial: List<SKMapVC.Polyline>,
         selectedMarkerInitial: SKMapVC.Marker?,
         selectMarkerOnClickInitial: Boolean,
         unselectMarkerOnMapClickInitial: Boolean,
         onMarkerClickInitial: Function1<SKMapVC.Marker, Unit>?,
         onMarkerSelectedInitial: Function1<SKMapVC.Marker?, Unit>?,
         onMapClickedInitial: Function1<LatLng, Unit>?,
+        onMapLongClickedInitial: Function1<LatLng, Unit>?,
         onMapBoundsChangeInitial: Function1<SKMapVC.LatLngBounds, Unit>?,
         showLogInitial: Boolean
     ): SKMapVC

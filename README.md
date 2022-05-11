@@ -8,8 +8,8 @@ Elle est basée sur GoogleMap
 
 Pour utiliser la librairie vous devez ajouter la ligne suivante à votre fichier _skot_librairies.properties_
 
-`tech.skot.libraries.sk-map:0.0.12_1.1.27:viewlegacy,tech.skot.libraries.map.di.skmapModule` pour utiliser google map
-`tech.skot.libraries.sk-map:0.0.12_1.1.27:viewlegacy_mapbox,tech.skot.libraries.map.di.skmapModule` pour utiliser mapbox
+`tech.skot.libraries.sk-map:0.0.14_1.1.48:viewlegacy,tech.skot.libraries.map.di.skmapModule` pour utiliser google map
+`tech.skot.libraries.sk-map:0.0.14_1.1.48:viewlegacy_mapbox,tech.skot.libraries.map.di.skmapModule` pour utiliser mapbox
 
 Cette librairie consiste en un seul SKComponent:
 

@@ -6,6 +6,7 @@ plugins {
 }
 
 dependencies {
+    add("implementation", project(":viewmodel"))
     api("com.google.android.gms:play-services-maps:18.0.2")
     api("com.google.maps.android:android-maps-utils:2.3.0")
     api("com.google.maps.android:maps-utils-ktx:3.3.0")

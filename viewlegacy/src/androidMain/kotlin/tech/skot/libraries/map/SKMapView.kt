@@ -150,6 +150,7 @@ class SKMapView(
                 MapType.HYBRID ->  it.mapType = GoogleMap.MAP_TYPE_HYBRID
                 MapType.TERRAIN ->  it.mapType = GoogleMap.MAP_TYPE_TERRAIN
                 MapType.NONE ->  it.mapType = GoogleMap.MAP_TYPE_NONE
+                else -> it.mapType = GoogleMap.MAP_TYPE_NORMAL
             }
 
         }

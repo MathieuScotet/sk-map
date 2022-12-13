@@ -106,10 +106,11 @@ class SKMapView(
     override fun onMapType(mapType : MapType) {
         mapView.getMapboxMap {
             when(mapType){
-                MapType.NORMAL ->   it.loadStyleUri(Style.MAPBOX_STREETS)
-                MapType.SATELLITE ->   it.loadStyleUri(Style.SATELLITE)
-                MapType.HYBRID ->   it.loadStyleUri(Style.SATELLITE_STREETS)
-                MapType.TERRAIN -> it.loadStyleUri(Style.OUTDOORS)
+                is MapType.NORMAL ->   it.loadStyleUri(Style.MAPBOX_STREETS)
+                is MapType.SATELLITE ->   it.loadStyleUri(Style.SATELLITE)
+                is MapType.HYBRID ->   it.loadStyleUri(Style.SATELLITE_STREETS)
+                is MapType.TERRAIN -> it.loadStyleUri(Style.OUTDOORS)
+                is MapType.CUSTOM -> it.loadStyleUri(mapType.uri)
                 else ->  it.loadStyleUri(Style.MAPBOX_STREETS)
             }
         }

@@ -48,5 +48,5 @@ class SKMapViewInjectorImpl : SKMapViewInjector {
 val skmapModule = module<BaseInjector> {
     single<SKMapViewInjector> { SKMapViewInjectorImpl() }
     single<Permissions> { PermissionsImpl() }
-    single<DeclaredPermissionHelper> { DeclaredPermissionHelperImpl(get()) }
+    single<tech.skot.libraries.map.DeclaredPermissionHelper> { DeclaredPermissionHelperImpl(get()) }
 }

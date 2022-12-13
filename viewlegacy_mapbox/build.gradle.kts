@@ -6,7 +6,7 @@ plugins {
 }
 
 dependencies {
-    api("com.mapbox.maps:android:10.3.0")
+    api("com.mapbox.maps:android:10.10.0")
 }
 
 
@@ -23,7 +23,7 @@ if (!localPublication) {
             artifact(javadocJar.get())
 
             pom {
-                name.set(project.name)
+                name.set("SK-Map " + project.name)
                 description.set("${project.name} module for SK-Map skot library")
                 url.set("https://github.com/skot-framework/sk-map")
                 licenses {

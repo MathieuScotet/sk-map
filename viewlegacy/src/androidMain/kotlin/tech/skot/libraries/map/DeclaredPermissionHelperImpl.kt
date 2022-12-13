@@ -7,7 +7,7 @@ import tech.skot.view.SKPermissionAndroid
 
 class DeclaredPermissionHelperImpl(
     private val context: Context
-) : DeclaredPermissionHelper {
+) : tech.skot.libraries.map.DeclaredPermissionHelper {
     override fun isPermissionDeclaredForApp(permission: SKPermission): Boolean {
         val name = (permission as? SKPermissionAndroid?)?.name
         val packageName = context.packageName

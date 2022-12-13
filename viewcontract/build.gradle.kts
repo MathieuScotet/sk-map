@@ -18,9 +18,9 @@ if (!localPublication) {
 
 
             pom {
-                name.set(project.name)
+                name.set("SK-Map " + project.name)
                 description.set("${project.name} module for SK-Map skot library")
-                url.set("https://github.com/skot-framework/sk-tabbar")
+                url.set("https://github.com/skot-framework/sk-map")
                 licenses {
                     license {
                         name.set("Apache 2.0")

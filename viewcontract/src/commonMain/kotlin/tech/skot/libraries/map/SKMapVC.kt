@@ -28,7 +28,7 @@ interface SKMapVC : SKComponentVC {
     var polygons: List<Polygon>
     var onMapBoundsChange: ((MapBounds) -> Unit)?
     var mapInteractionSettings: MapInteractionSettings
-    var mapType : MapType
+    var mapType: MapType
 
     /**
      *  function to call for moving camera on another location
@@ -100,10 +100,9 @@ interface SKMapVC : SKComponentVC {
         val strokeColor: Color,
         val id: String?,
         val lineWidth: Dimen,
-        val holes : List<List<LatLng>>,
+        val holes: List<List<LatLng>>,
         val hidden: Boolean = false
     )
-
 
 
     /**
@@ -237,12 +236,13 @@ interface SKMapVC : SKComponentVC {
 }
 
 
-enum class MapType {
-    NORMAL,
-    SATELLITE,
-    HYBRID,
-    TERRAIN,
-    NONE
+sealed class MapType {
+    object NORMAL : MapType()
+    object SATELLITE : MapType()
+    object HYBRID : MapType()
+    object TERRAIN : MapType()
+    object NONE : MapType()
+    data class CUSTOM(val uri: String) : MapType()
 
 }
 

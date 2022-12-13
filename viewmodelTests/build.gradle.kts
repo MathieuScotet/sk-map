@@ -37,9 +37,9 @@ if (!localPublication) {
 
             if (!localPublication) {
                 pom {
-                    name.set(project.name)
-                    description.set("${project.name} module for SK-Tabbar skot library")
-                    url.set("https://github.com/skot-framework/sk-tabbar")
+                    name.set("SK-Map " + project.name)
+                    description.set("${project.name} module for SK-Map skot library")
+                    url.set("https://github.com/skot-framework/sk-map")
                     licenses {
                         license {
                             name.set("Apache 2.0")
@@ -59,9 +59,9 @@ if (!localPublication) {
                         }
                     }
                     scm {
-                        connection.set("scm:git:github.com/skot-framework/sk-tabbar.git")
-                        developerConnection.set("scm:git:ssh://github.com/skot-framework/sk-tabbar.git")
-                        url.set("https://github.com/skot-framework/sk-tabbar/tree/master")
+                        connection.set("scm:git:github.com/skot-framework/sk-map.git")
+                        developerConnection.set("scm:git:ssh://github.com/skot-framework/sk-map.git")
+                        url.set("https://github.com/skot-framework/sk-map/tree/master")
                     }
                 }
             }

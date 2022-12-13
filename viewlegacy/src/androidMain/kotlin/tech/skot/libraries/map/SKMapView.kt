@@ -20,12 +20,9 @@ import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLngBounds
-import com.google.android.gms.maps.model.MapStyleOptions
 import tech.skot.core.components.SKActivity
 import tech.skot.core.components.SKComponentView
 import com.google.android.gms.maps.model.LatLng as LatLngGMap
-import tech.skot.libraries.map.LatLng
-
 
 class SKMapView(
     override val proxy: SKMapViewProxy,
@@ -150,6 +147,7 @@ class SKMapView(
                 MapType.HYBRID ->  it.mapType = GoogleMap.MAP_TYPE_HYBRID
                 MapType.TERRAIN ->  it.mapType = GoogleMap.MAP_TYPE_TERRAIN
                 MapType.NONE ->  it.mapType = GoogleMap.MAP_TYPE_NONE
+                else -> it.mapType = GoogleMap.MAP_TYPE_NORMAL
             }
 
         }

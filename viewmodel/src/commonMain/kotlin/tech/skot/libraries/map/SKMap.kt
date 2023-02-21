@@ -1,6 +1,5 @@
 package tech.skot.libraries.map
 
-import tech.skot.core.SKLog
 import tech.skot.core.components.SKComponent
 import tech.skot.core.di.get
 import tech.skot.core.view.SKPermission
@@ -230,9 +229,9 @@ class SKMap(
             hasPermission(it)
         } != null
 
-        SKLog.d("has permission in Manifest : $hasPermissionInManifest")
-        SKLog.d("has permission Granted : $hasAtLeastOnePermissionGranted")
-        SKLog.d("askForPermissionIfNeeded : $askForPermissionIfNeeded")
+        MapLogger.d("has permission in Manifest : $hasPermissionInManifest")
+        MapLogger.d("has permission Granted : $hasAtLeastOnePermissionGranted")
+        MapLogger.d("askForPermissionIfNeeded : $askForPermissionIfNeeded")
 
 
         when {
@@ -243,13 +242,13 @@ class SKMap(
                 view.showMyLocationButton(show, onPermissionError)
             }
             askForPermissionIfNeeded -> {
-                SKLog.d("Request permission : ")
+                MapLogger.d("Request permission : ")
                 requestPermissions(myLocationPermission) {
                     if (it.isNotEmpty()) {
-                        SKLog.d("Requested permission : Granted")
+                        MapLogger.d("Requested permission : Granted")
                         view.showMyLocationButton(show, onPermissionError)
                     } else {
-                        SKLog.d("Requested permission : Refused")
+                        MapLogger.d("Requested permission : Refused")
                         onPermissionError?.invoke()
                     }
                 }
@@ -259,6 +258,68 @@ class SKMap(
             }
         }
     }
+
+
+    /**
+     * Show my location  on map
+     * @param show : true to show my location on map
+     * @param askForPermissionIfNeeded true to ask for Permissions if needed. You can use it if permissions are not managed in screen
+     * @param onPermissionError a callback fired if no location permissions is granted
+     */
+    @Suppress("unused")
+    fun showMyLocation(
+        show: Boolean = true,
+        askForPermissionIfNeeded: Boolean = false,
+        onPermissionError: (() -> Unit)? = null
+    ) {
+        val hasCoarsePermission =
+            permissions.coarseLocation?.let { declaredPermissionHelper.isPermissionDeclaredForApp(it) }
+                ?: false
+        val hasFinePermission =
+            permissions.fineLocation?.let { declaredPermissionHelper.isPermissionDeclaredForApp(it) }
+                ?: false
+        val myLocationPermission = mutableListOf<SKPermission>()
+        permissions.coarseLocation?.let { myLocationPermission.add(it) }
+        permissions.fineLocation?.let { myLocationPermission.add(it) }
+
+
+        val hasPermissionInManifest = hasCoarsePermission || hasFinePermission
+
+        val hasAtLeastOnePermissionGranted = myLocationPermission.find {
+            hasPermission(it)
+        } != null
+
+        MapLogger.d("has permission in Manifest : $hasPermissionInManifest")
+        MapLogger.d("has permission Granted : $hasAtLeastOnePermissionGranted")
+        MapLogger.d("askForPermissionIfNeeded : $askForPermissionIfNeeded")
+
+
+        when {
+            !hasPermissionInManifest -> {
+                onPermissionError?.invoke()
+            }
+            hasAtLeastOnePermissionGranted -> {
+                view.showMyLocation(show, onPermissionError)
+            }
+            askForPermissionIfNeeded -> {
+                MapLogger.d("Request permission : ")
+                requestPermissions(myLocationPermission) {
+                    if (it.isNotEmpty()) {
+                        MapLogger.d("Requested permission : Granted")
+                        view.showMyLocation(show, onPermissionError)
+                    } else {
+                        MapLogger.d("Requested permission : Refused")
+                        onPermissionError?.invoke()
+                    }
+                }
+            }
+            else -> {
+                onPermissionError?.invoke()
+            }
+        }
+    }
+
+
 
     /**
      * get current MapBounds

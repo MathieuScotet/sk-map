@@ -58,6 +58,14 @@ interface SKMapVC : SKComponentVC {
      */
     fun showMyLocationButton(show: Boolean, onPermissionError: (() -> Unit)?)
 
+
+    /**
+     * Show my location
+     * @param show : true to show my location on map
+     * @param onPermissionError a callback fired if no location permissions is granted
+     */
+    fun showMyLocation(show: Boolean, onPermissionError: (() -> Unit)?)
+
     /**
      * get current MapBounds
      * @param onResult, called once with current [MapBounds][SKMapVC.LatLngBounds]

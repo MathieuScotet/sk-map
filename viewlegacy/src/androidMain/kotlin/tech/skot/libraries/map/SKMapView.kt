@@ -329,6 +329,31 @@ class SKMapView(
             ) {
                 MapLoggerView.d("enabled myLocationButton :$show")
                 it.isMyLocationEnabled = show
+                it.uiSettings.isMyLocationButtonEnabled = true
+            } else {
+                MapLoggerView.d("permission error :$show")
+                onPermissionError?.invoke()
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    override fun showMyLocation(
+        show: Boolean,
+        onPermissionError: (() -> Unit)?
+    ) {
+        mapView.getMapAsync {
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(
+                    context,
+                    android.Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                MapLoggerView.d("enabled myLocationButton :$show")
+                it.isMyLocationEnabled = show
             } else {
                 MapLoggerView.d("permission error :$show")
                 onPermissionError?.invoke()

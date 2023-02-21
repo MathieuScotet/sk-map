@@ -77,8 +77,14 @@ class SKMapViewMock(
     )
 
     val showMyLocationButtonCalls = mutableListOf<ShowMyLocationButtonCall>()
+    val showMyLocationCalls = mutableListOf<ShowMyLocationCall>()
 
     data class ShowMyLocationButtonCall(
+        val show: Boolean,
+        val onPermissionError: (() -> Unit)?
+    )
+
+    data class ShowMyLocationCall(
         val show: Boolean,
         val onPermissionError: (() -> Unit)?
     )
@@ -94,6 +100,11 @@ class SKMapViewMock(
     override fun showMyLocationButton(show: Boolean, onPermissionError: (() -> Unit)?) {
         showMyLocationButtonCalls.add(ShowMyLocationButtonCall(show, onPermissionError))
     }
+
+    override fun showMyLocation(show: Boolean, onPermissionError: (() -> Unit)?) {
+        showMyLocationCalls.add(ShowMyLocationCall(show, onPermissionError))
+    }
+
 
     override fun getMapBounds(onResult: (SKMapVC.LatLngBounds) -> Unit) {
         getMapBoundsCalls.add(GetMapBoundsCall(onResult))

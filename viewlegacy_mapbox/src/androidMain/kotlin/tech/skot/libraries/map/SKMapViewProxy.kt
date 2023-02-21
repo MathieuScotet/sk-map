@@ -87,6 +87,7 @@ class SKMapViewProxy(
     private val setCenterOnPositionsMessage: SKMessage<CenterOnPositionsData> = SKMessage()
     private val setCameraZoomMessage: SKMessage<SetCameraZoomData> = SKMessage()
     private val showMyLocationButtonMessage: SKMessage<ShowMyLocationButtonData> = SKMessage()
+    private val showMyLocationMessage: SKMessage<ShowMyLocationData> = SKMessage()
     private val getMapBoundsMessage: SKMessage<GetMapBoundsData> = SKMessage()
     private val getCurrentLocationMessage: SKMessage<GetCurrentLocationData> = SKMessage()
 
@@ -96,6 +97,18 @@ class SKMapViewProxy(
     ) {
         showMyLocationButtonMessage.post(
             ShowMyLocationButtonData(
+                show,
+                onPermissionError
+            )
+        )
+    }
+
+    override fun showMyLocation(
+        show: Boolean,
+        onPermissionError: (() -> Unit)?
+    ) {
+        showMyLocationMessage.post(
+            ShowMyLocationData(
                 show,
                 onPermissionError
             )
@@ -187,6 +200,10 @@ class SKMapViewProxy(
             showMyLocationButton(it.show, it.onPermissionError)
         }
 
+        showMyLocationMessage.observe {
+            showMyLocation(it.show, it.onPermissionError)
+        }
+
         getMapBoundsMessage.observe {
             getMapBounds(it.onResult)
         }
@@ -225,6 +242,11 @@ class SKMapViewProxy(
         val onPermissionError: (() -> Unit)?
     )
 
+    data class ShowMyLocationData(
+        val show: Boolean,
+        val onPermissionError: (() -> Unit)?
+    )
+
     data class CenterOnPositionsData(val positions: List<LatLng>)
 
     data class GetMapBoundsData(
@@ -256,6 +278,11 @@ interface SKMapRAI {
     fun setCameraZoom(zoomLevel: Float, animate: Boolean)
 
     fun showMyLocationButton(
+        show: Boolean,
+        onPermissionError: (() -> Unit)?
+    )
+
+    fun showMyLocation(
         show: Boolean,
         onPermissionError: (() -> Unit)?
     )

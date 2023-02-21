@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.view.Gravity
+import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import androidx.collection.LruCache
@@ -103,15 +104,15 @@ class SKMapView(
             }
     }
 
-    override fun onMapType(mapType : MapType) {
+    override fun onMapType(mapType: MapType) {
         mapView.getMapboxMap {
-            when(mapType){
-                is MapType.NORMAL ->   it.loadStyleUri(Style.MAPBOX_STREETS)
-                is MapType.SATELLITE ->   it.loadStyleUri(Style.SATELLITE)
-                is MapType.HYBRID ->   it.loadStyleUri(Style.SATELLITE_STREETS)
+            when (mapType) {
+                is MapType.NORMAL -> it.loadStyleUri(Style.MAPBOX_STREETS)
+                is MapType.SATELLITE -> it.loadStyleUri(Style.SATELLITE)
+                is MapType.HYBRID -> it.loadStyleUri(Style.SATELLITE_STREETS)
                 is MapType.TERRAIN -> it.loadStyleUri(Style.OUTDOORS)
                 is MapType.CUSTOM -> it.loadStyleUri(mapType.uri)
-                else ->  it.loadStyleUri(Style.MAPBOX_STREETS)
+                else -> it.loadStyleUri(Style.MAPBOX_STREETS)
             }
         }
     }
@@ -318,6 +319,7 @@ class SKMapView(
         }
     }
 
+
     @SuppressLint("MissingPermission")
     override fun showMyLocationButton(
         show: Boolean,
@@ -333,34 +335,77 @@ class SKMapView(
                     android.Manifest.permission.ACCESS_FINE_LOCATION
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
-                MapLoggerView.d("enabled myLocationButton :$show")
-                val button = ImageButton(mapView.context)
-                button.setImageResource(R.drawable.skmap_my_location)
-                val param = FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.WRAP_CONTENT,
-                    FrameLayout.LayoutParams.WRAP_CONTENT
-                )
-                param.gravity = Gravity.RIGHT or Gravity.BOTTOM
+                if(show) {
+                    MapLoggerView.d("enabled myLocationButton :$show")
+                    val button = ImageButton(mapView.context)
+                    button.tag = "sk_mapbox_button_position"
+                    button.setImageResource(R.drawable.skmap_my_location)
+                    val param = FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.WRAP_CONTENT,
+                        FrameLayout.LayoutParams.WRAP_CONTENT
+                    )
+                    param.gravity = Gravity.RIGHT or Gravity.BOTTOM
 
-                val margin =
-                    activity.resources.getDimensionPixelSize(R.dimen.skmap_margin_my_location)
-                param.setMargins(margin, margin, margin, margin)
+                    val margin =
+                        activity.resources.getDimensionPixelSize(R.dimen.skmap_margin_my_location)
+                    param.setMargins(margin, margin, margin, margin)
 
-                mapView.addView(button, param)
-                mapView.location.enabled = true
-                mapView.location.getLocationProvider()
-                    ?.registerLocationConsumer(locationConsumer)
+                    mapView.addView(button, param)
+                    mapView.location.enabled = true
+                    mapView.location.getLocationProvider()
+                        ?.registerLocationConsumer(locationConsumer)
 
-                button.setOnClickListener { view ->
-                    if (lastKnownLocation != null) {
-                        mapboxMap.flyTo(
-                            cameraOptions {
-                                center(lastKnownLocation)
-                            }
-                        )
+                    button.setOnClickListener { view ->
+                        if (lastKnownLocation != null) {
+                            mapboxMap.flyTo(
+                                cameraOptions {
+                                    center(lastKnownLocation)
+                                }
+                            )
+                        }
+
+                    }
+                }else{
+                    mapView.location.enabled = false
+                    mapView.location.getLocationProvider()
+                        ?.unRegisterLocationConsumer(locationConsumer)
+                    mapView.findViewWithTag<View>("sk_mapbox_button_position")?.let {
+                        mapView.removeView(it)
                     }
 
                 }
+            } else {
+                MapLoggerView.d("permission error :$show")
+                onPermissionError?.invoke()
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    override fun showMyLocation(
+        show: Boolean,
+        onPermissionError: (() -> Unit)?
+    ) {
+        mapView.getMapboxMap { mapboxMap ->
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(
+                    context,
+                    android.Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                MapLoggerView.d("enabled myLocationButton :$show")
+                mapView.location.enabled = show
+                if (show) {
+                    mapView.location.getLocationProvider()
+                        ?.registerLocationConsumer(locationConsumer)
+                } else {
+                    mapView.location.getLocationProvider()
+                        ?.unRegisterLocationConsumer(locationConsumer)
+                }
+
             } else {
                 MapLoggerView.d("permission error :$show")
                 onPermissionError?.invoke()

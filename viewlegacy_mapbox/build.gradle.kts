@@ -6,7 +6,7 @@ plugins {
 }
 
 dependencies {
-    api("com.mapbox.maps:android:10.10.0")
+    api("com.mapbox.maps:android:10.3.0")
 }
 
 

@@ -273,12 +273,10 @@ open class MapBoxInteractionHelper(
             }
 
             //items to remove from map
-            oldItemsToRemove.forEach { pair ->
-                if (pair.first.id == lastSelectedMarker?.first?.id) {
-                    lastSelectedMarker = null
-                }
-                pointAnnotationManager.delete(pair.second)
+            if(oldItemsToRemove.any { it.first.id ==  lastSelectedMarker?.first?.id}) {
+                lastSelectedMarker = null
             }
+            pointAnnotationManager.delete(oldItemsToRemove.map { it.second })
 
             //items to update on map
             val updatedMarker = oldItemsToUpdate.mapNotNull { currentPair ->
